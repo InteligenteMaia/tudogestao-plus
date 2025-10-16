@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TudoGestão+ | Workflow Git & GitHub</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  :root {
+    --primary: #a855f7;
+    --secondary: #ec4899;
+    --accent: #3b82f6;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --dark: #0f0f0f;
+    --card-bg: rgba(255, 255, 255, 0.06);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --text: #ffffff;
+    --text-muted: #9ca3af;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+    color: var(--text);
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  /* Animated Background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+      radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 40% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+    animation: float 20s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+  }
+
+  /* Header */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(10, 10, 10, 0.8);
+    border-bottom: 1px solid var(--card-border);
+    padding: 1.5rem 2rem;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .logo {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    animation: gradient 3s ease infinite;
+    background-size: 200% 200%;
+  }
+
+  @keyframes gradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+  }
+
+  /* Navigation */
+  nav {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .nav-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text);
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .nav-btn:hover {
+    background: rgba(168, 85, 247, 0.2);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+  }
+
+  /* Container */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  /* Section */
+  section {
+    margin: 3rem 0;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease forwards;
+  }
+
+  section:nth-child(even) {
+    animation-delay: 0.2s;
+  }
+
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+  }
+
+  /* Card */
+  .card {
+    backdrop-filter: blur(15px) saturate(180%);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+  }
+
+  @keyframes shimmer {
+    to { background-position: 200% 0; }
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 48px rgba(168, 85, 247, 0.2);
+    border-color: var(--primary);
+  }
+
+  /* Headings */
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .section-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 12px;
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    margin: 1.5rem 0 1rem;
+    color: var(--primary);
+  }
+
+  /* Text */
+  p {
+    margin-bottom: 1rem;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+  }
+
+  .highlight {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .warning {
+    color: var(--warning);
+    font-weight: 600;
+  }
+
+  .danger {
+    color: var(--danger);
+    font-weight: 600;
+  }
+
+  .success {
+    color: var(--success);
+    font-weight: 600;
+  }
+
+  /* Lists */
+  ul, ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  li {
+    margin-bottom: 0.5rem;
+    color: var(--text-muted);
+  }
+
+  ul li::marker {
+    color: var(--primary);
+  }
+
+  ol li::marker {
+    color: var(--secondary);
+    font-weight: bold;
+  }
+
+  /* Code */
+  code {
+    background: rgba(168, 85, 247, 0.1);
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    color: #93c5fd;
+    font-size: 0.95em;
+  }
+
+  pre {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+    position: relative;
+  }
+
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #e5e7eb;
+    display: block;
+    line-height: 1.8;
+  }
+
+  /* Diagram */
+  .diagram {
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid var(--primary);
+    border-radius: 16px;
+    padding: 2rem;
+    font-family: 'Courier New', monospace;
+    white-space: pre;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    line-height: 1.8;
+    font-size: 1rem;
+    color: #93c5fd;
+  }
+
+  /* Grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+  }
+
+  .grid-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .grid-item:hover {
+    background: rgba(168, 85, 247, 0.1);
+    border-color: var(--primary);
+    transform: scale(1.05);
+  }
+
+  .grid-item h4 {
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+  }
+
+  /* Badge */
+  .badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0.25rem;
+  }
+
+  .badge-primary { background: rgba(168, 85, 247, 0.2); color: var(--primary); }
+  .badge-secondary { background: rgba(236, 72, 153, 0.2); color: var(--secondary); }
+  .badge-success { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+  .badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+  .badge-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+  /* Button */
+  .btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+
+  .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4);
+  }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+  }
+
+  th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  th {
+    background: rgba(168, 85, 247, 0.1);
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  /* Timeline */
+  .timeline {
+    position: relative;
+    padding-left: 3rem;
+    margin: 2rem 0;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.5rem;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--primary), var(--secondary));
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2.3rem;
+    top: 0.5rem;
+    width: 1rem;
+    height: 1rem;
+    background: var(--primary);
+    border: 3px solid var(--dark);
+    border-radius: 50%;
+  }
+
+  /* Alert */
+  .alert {
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin: 1rem 0;
+    border-left: 4px solid;
+  }
+
+  .alert-info {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: var(--accent);
+    color: #93c5fd;
+  }
+
+  .alert-success {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: var(--success);
+    color: #6ee7b7;
+  }
+
+  .alert-warning {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: var(--warning);
+    color: #fbbf24;
+  }
+
+  .alert-danger {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: var(--danger);
+    color: #fca5a5;
+  }
+
+  /* Visual Flow */
+  .flow-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+
+  .flow-step {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1rem;
+    border-radius: 12px;
+    border-left: 4px solid var(--primary);
+    transition: all 0.3s ease;
+  }
+
+  .flow-step:hover {
+    background: rgba(168, 85, 247, 0.1);
+    transform: translateX(10px);
+  }
+
+  .flow-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--primary);
+    border-radius: 50%;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .flow-arrow {
+    font-size: 2rem;
+    color: var(--primary);
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    margin-top: 4rem;
+    border-top: 1px solid var(--card-border);
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .footer-gradient {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 600;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .logo { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+    .section-number { width: 2.5rem; height: 2.5rem; font-size: 1.2rem; }
+    .grid { grid-template-columns: 1fr; }
+    nav { flex-direction: column; }
+    .container { padding: 1rem; }
+  }
+
+  /* Scroll to top button */
+  .scroll-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+  }
+
+  .scroll-top.visible {
+    opacity: 1;
+  }
+
+  .scroll-top:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4);
+  }
+
+  /* Animations */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .pulse {
+    animation: pulse 2s ease-in-out infinite;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="header-content">
+    <div class="logo">🚀 TudoGestão+ Git & GitHub</div>
+    <p class="subtitle">Guia Completo de Workflow para Desenvolvimento em Equipe</p>
+    <nav>
+      <button class="nav-btn" onclick="scrollToSection('intro')">Introdução</button>
+      <button class="nav-btn" onclick="scrollToSection('conceitos')">Conceitos</button>
+      <button class="nav-btn" onclick="scrollToSection('estrutura')">Estrutura</button>
+      <button class="nav-btn" onclick="scrollToSection('fluxo')">Fluxo</button>
+      <button class="nav-btn" onclick="scrollToSection('praticas')">Boas Práticas</button>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Introdução -->
+  <section id="intro">
+    <div class="card">
+      <h2><span class="section-number">📚</span> Introdução</h2>
+      
+      <div class="grid">
+        <div class="grid-item">
+          <h4>💻 O que é Git?</h4>
+          <p>Sistema de <span class="highlight">controle de versão</span> que registra todas as mudanças no código, como uma máquina do tempo para o projeto.</p>
+          <span class="badge badge-primary">Local</span>
+          <span class="badge badge-success">Versionamento</span>
+        </div>
+        
+        <div class="grid-item">
+          <h4>☁️ O que é GitHub?</h4>
+          <p>Plataforma na nuvem onde o projeto fica hospedado, permitindo <span class="highlight">colaboração em equipe</span> de qualquer lugar.</p>
+          <span class="badge badge-secondary">Remoto</span>
+          <span class="badge badge-success">Colaboração</span>
+        </div>
+      </div>
+
+      <div class="alert alert-info">
+        <strong>💡 Por que usar?</strong> Com Git e GitHub, múltiplas pessoas podem trabalhar no mesmo projeto simultaneamente sem sobrescrever o trabalho umas das outras!
+      </div>
+    </div>
+  </section>
+
+  <!-- Conceitos Fundamentais -->
+  <section id="conceitos">
+    <div class="card">
+      <h2><span class="section-number">🎯</span> Conceitos Fundamentais</h2>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>Termo</th>
+            <th>O que é</th>
+            <th>Quando usar</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>Repository</code></td>
+            <td>Pasta do projeto com todo histórico</td>
+            <td>Início do projeto</td>
+          </tr>
+          <tr>
+            <td><code>Clone</code></td>
+            <td>Copiar repositório do GitHub para seu PC</td>
+            <td>Primeira vez no projeto</td>
+          </tr>
+          <tr>
+            <td><code>Branch</code></td>
+            <td>Linha de desenvolvimento isolada</td>
+            <td>Nova funcionalidade ou correção</td>
+          </tr>
+          <tr>
+            <td><code>Commit</code></td>
+            <td>Ponto de salvamento com mensagem</td>
+            <td>Após cada mudança significativa</td>
+          </tr>
+          <tr>
+            <td><code>Push</code></td>
+            <td>Enviar commits locais para GitHub</td>
+            <td>Compartilhar seu trabalho</td>
+          </tr>
+          <tr>
+            <td><code>Pull</code></td>
+            <td>Baixar atualizações do GitHub</td>
+            <td>Sincronizar com equipe</td>
+          </tr>
+          <tr>
+            <td><code>Merge</code></td>
+            <td>Juntar branches</td>
+            <td>Integrar funcionalidades</td>
+          </tr>
+          <tr>
+            <td><code>Pull Request</code></td>
+            <td>Pedido de revisão de código</td>
+            <td>Antes de mergear</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>🌳 Entendendo Branches</h3>
+      <div class="diagram">
+main (produção)
+  │
+  ├── v1.0.0 ← Tag de versão
+  │
+  └── dev (desenvolvimento)
+       │
+       ├── feat/login ← Nova funcionalidade
+       │    └── Trabalho isolado
+       │
+       ├── fix/bug-payment ← Correção de bug
+       │    └── Não afeta outras branches
+       │
+       └── michael-dev ← Branch pessoal
+            └── Seus commits
+      </div>
+    </div>
+  </section>
+
+  <!-- Estrutura do Projeto -->
+  <section id="estrutura">
+    <div class="card">
+      <h2><span class="section-number">🏗️</span> Estrutura de Branches do TudoGestão+</h2>
+      
+      <div class="grid">
+        <div class="grid-item">
+          <h4>🟢 main</h4>
+          <p><strong>Versão de produção</strong> - Código estável rodando no servidor</p>
+          <span class="badge badge-success">Estável</span>
+          <span class="badge badge-danger">Protegida</span>
+          <ul>
+            <li>Apenas código testado</li>
+            <li>Não commitar diretamente</li>
+            <li>Apenas via Pull Request</li>
+          </ul>
+        </div>
+
+        <div class="grid-item">
+          <h4>🟡 dev</h4>
+          <p><strong>Versão de desenvolvimento</strong> - Integração de todas funcionalidades</p>
+          <span class="badge badge-warning">Testes</span>
+          <span class="badge badge-primary">Integração</span>
+          <ul>
+            <li>Recebe PRs das branches pessoais</li>
+            <li>Testes antes de ir para main</li>
+            <li>Base para novas branches</li>
+          </ul>
+        </div>
+
+        <div class="grid-item">
+          <h4>🔵 Branches Pessoais</h4>
+          <p><strong>Trabalho individual</strong> - Cada membro do time</p>
+          <span class="badge badge-secondary">Pessoal</span>
+          <span class="badge badge-primary">Desenvolvimento</span>
+          <ul>
+            <li>michael-dev</li>
+            <li>larissa-dev</li>
+            <li>felipe-dev</li>
+            <li>rubens-dev</li>
+            <li>eliseu-dev</li>
+            <li>najla-dev</li>
+            <li>thaynara-dev</li>
+          </ul>
+        </div>
+
+        <div class="grid-item">
+          <h4>🟣 Branches de Feature</h4>
+          <p><strong>Funcionalidades específicas</strong> - Tarefas isoladas</p>
+          <span class="badge badge-primary">Feature</span>
+          <span class="badge badge-warning">Temporária</span>
+          <ul>
+            <li>feat/tela-login</li>
+            <li>feat/cadastro-clientes</li>
+            <li>fix/bug-calculo</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>🎨 Fluxo Visual das Branches</h3>
+      <div class="diagram">
+┌──────────────────────────────────────────────┐
+│ main (Produção - v1.0.0)                     │ ← Código estável
+└───────────────┬──────────────────────────────┘
+                │ Merge após testes
+┌───────────────▼──────────────────────────────┐
+│ dev (Desenvolvimento)                         │ ← Integração
+└───┬────────┬────────┬──────────────────────┘
+    │        │        │
+    │        │        └── feat/dashboard      ← Features temporárias
+    │        │
+    │        └─────────── larissa-dev         ← Branch pessoal
+    │
+    └────────────────── michael-dev            ← Branch pessoal
+      </div>
+
+      <div class="alert alert-warning">
+        <strong>⚠️ Importante:</strong> Nunca commite diretamente em <code>main</code> ou <code>dev</code>. Sempre trabalhe em sua branch pessoal ou de feature!
+      </div>
+    </div>
+  </section>
+
+  <!-- Fluxo de Trabalho -->
+  <section id="fluxo">
+    <div class="card">
+      <h2><span class="section-number">⚙️</span> Fluxo de Trabalho Completo</h2>
+      
+      <h3>🎬 Primeira Vez no Projeto</h3>
+      <div class="timeline">
+        <div class="timeline-item">
+          <h4>1. Clonar o repositório</h4>
+          <pre><code>git clone https://github.com/InteligenteMaia/tudogestao-plus.git
+cd tudogestao-plus</code></pre>
+          <p>Baixa o projeto completo para seu computador</p>
+        </div>
+
+        <div class="timeline-item">
+          <h4>2. Configurar Git (se ainda não fez)</h4>
+          <pre><code>git config --global user.name "Seu Nome"
+git config --global user.email "seu@email.com"</code></pre>
+          <p>Identifica você nos commits</p>
+        </div>
+
+        <div class="timeline-item">
+          <h4>3. Ir para branch dev</h4>
+          <pre><code>git checkout dev
+git pull origin dev</code></pre>
+          <p>Garante que está na versão mais atualizada</p>
+        </div>
+
+        <div class="timeline-item">
+          <h4>4. Criar sua branch pessoal</h4>
+          <pre><code>git checkout -b michael-dev</code></pre>
+          <p>Cria sua área de trabalho isolada</p>
+        </div>
+      </div>
+
+      <h3>🔄 Ciclo Diário de Trabalho</h3>
+      <div class="flow-container">
+        <div class="flow-step">
+          <div class="flow-number">1</div>
+          <div>
+            <strong>Atualizar branch</strong>
+            <pre><code>git checkout dev
+git pull origin dev
+git checkout michael-dev
+git merge dev</code></pre>
+          </div>
+        </div>
+
+        <div class="flow-arrow">↓</div>
+
+        <div class="flow-step">
+          <div class="flow-number">2</div>
+          <div>
+            <strong>Trabalhar no código</strong>
+            <p>Desenvolver, testar, debugar...</p>
+          </div>
+        </div>
+
+        <div class="flow-arrow">↓</div>
+
+        <div class="flow-step">
+          <div class="flow-number">3</div>
+          <div>
+            <strong>Ver o que mudou</strong>
+            <pre><code>git status
+git diff</code></pre>
+          </div>
+        </div>
+
+        <div class="flow-arrow">↓</div>
+
+        <div class="flow-step">
+          <div class="flow-number">4</div>
+          <div>
+            <strong>Adicionar mudanças</strong>
+            <pre><code>git add .
+# ou
+git add arquivo_especifico.py</code></pre>
+          </div>
+        </div>
+
+        <div class="flow-arrow">↓</div>
+
+        <div class="flow-step">
+          <div class="flow-number">5</div>
+          <div>
+            <strong>Commitar com mensagem clara</strong>
+            <pre><code>git commit -m "feat: adiciona tela de login com validação"</code></pre>
+          </div>
+        </div>
+
+        <div class="flow-arrow">↓</div>
+
+        <div class="flow-step">
+          <div class="flow-number">6</div>
+          <div>
+            <strong>Enviar para GitHub</strong>
+            <pre><code>git push origin michael-dev</code></pre>
+          </div>
+        </div>
+
+        <div class="flow-arrow">↓</div>
+
+        <div class="flow-step">
+          <div class="flow-number">7</div>
+          <div>
+            <strong>Abrir Pull Request</strong>
+            <p>No GitHub: Compare & Pull Request</p>
+            <ul>
+              <li><strong>Base:</strong> dev</li>
+              <li><strong>Compare:</strong> michael-dev</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <h3>📝 Padrão de Mensagens de Commit</h3>
+      <div class="grid">
+        <div class="grid-item">
+          <h4>✨ feat:</h4>
+          <p>Nova funcionalidade</p>
+          <code>feat: adiciona sistema de login</code>
+        </div>
+        <div class="grid-item">
+          <h4>🐛 fix:</h4>
+          <p>Correção de bug</p>
+          <code>fix: corrige cálculo de impostos</code>
+        </div>
+        <div class="grid-item">
+          <h4>📚 docs:</h4>
+          <p>Documentação</p>
+          <code>docs: atualiza README</code>
+        </div>
+        <div class="grid-item">
+          <h4>💎 refactor:</h4>
+          <p>Refatoração</p>
+          <code>refactor: otimiza queries</code>
+        </div>
+        <div class="grid-item">
+          <h4>🎨 style:</h4>
+          <p>Formatação</p>
+          <code>style: ajusta indentação</code>
+        </div>
+        <div class="grid-item">
+          <h4>🧪 test:</h4>
+          <p>Testes</p>
+          <code>test: adiciona testes unitários</code>
+        </div>
+      </div>
+
+      <div class="alert alert-success">
+        <strong>✅ Bom commit:</strong> <code>feat: implementa validação de CPF no cadastro de clientes</code>
+      </div>
+      <div class="alert alert-danger">
+        <strong>❌ Commit ruim:</strong> <code>mudanças</code>, <code>update</code>, <code>fix</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pull Request -->
+  <section>
+    <div class="card">
+      <h2><span class="section-number">🔀</span> Pull Request - A Chave do Trabalho em Equipe</h2>
+      
+      <p>Pull Request (PR) é o pedido para que seu código seja <span class="highlight">revisado</span> e <span class="highlight">integrado</span> ao projeto.</p>
+
+      <h3>🎯 Quando abrir um PR?</h3>
+      <ul>
+        <li>✅ Funcionalidade completa e testada</li>
+        <li>✅ Código funcionando localmente</li>
+        <li>✅ Sem erros de sintaxe ou lógica</li>
+        <li>✅ Commits organizados com mensagens claras</li>
+      </ul>
+
+      <h3>📋 Template de Pull Request</h3>
+      <pre><code>## 📝 Descrição
+Implementa sistema de autenticação com JWT
+
+## ✨ O que foi feito
+- Criação de tela de login
+- Validação de credenciais
+- Integração com API de autenticação
+- Testes unitários
+
+## 🧪 Como testar
+1. Rodar backend: `python main.py`
+2. Acessar: http://localhost:8000/login
+3. Testar com usuário: teste@email.com / senha123
+
+## 📸 Screenshots
+(adicionar prints da tela)
+
+## ✅ Checklist
+- [x] Código testado localmente
+- [x] Testes unitários passando
+- [x] Documentação atualizada
+- [ ] Code review solicitado
+
+## 🔗 Issues relacionadas
+Closes #42
+Related to #38</code></pre>
+
+      <h3>🔄 Fluxo do Pull Request</h3>
+      <div class="diagram">
+1. Você abre PR: michael-dev → dev
+         ↓
+2. Time revisa código
+   - Comentários
+   - Sugestões
+   - Aprovação ou mudanças
+         ↓
+3. Você faz ajustes (se necessário)
+   - Novo commit
+   - Push automático
+         ↓
+4. Aprovação final
+         ↓
+5. Merge na dev
+         ↓
+6. Branch pode ser deletada
+      </div>
+
+      <div class="alert alert-info">
+        <strong>💡 Dica:</strong> Peça revisão de pelo menos 1 pessoa do time antes do merge!
+      </div>
+    </div>
+  </section>
+
+  <!-- Boas Práticas -->
+  <section id="praticas">
+    <div class="card">
+      <h2><span class="section-number">⭐</span> Boas Práticas e Regras de Ouro</h2>
+      
+      <div class="grid">
+        <div class="grid-item">
+          <h4>✅ SEMPRE FAÇA</h4>
+          <ul>
+            <li><code>git pull</code> antes de começar</li>
+            <li>Commits pequenos e frequentes</li>
+            <li>Mensagens descritivas</li>
+            <li>Trabalhe em branches</li>
+            <li>Teste antes de commitar</li>
+            <li>Revise PRs dos colegas</li>
+            <li>Atualize sua branch regularmente</li>
+            <li>Documente mudanças importantes</li>
+          </ul>
+        </div>
+
+        <div class="grid-item">
+          <h4>❌ NUNCA FAÇA</h4>
+          <ul>
+            <li>Commit direto em <code>main</code></li>
+            <li>Push sem testar</li>
+            <li>Commits gigantes</li>
+            <li>Mensagens vagas: "update", "fix"</li>
+            <li>Commitar senhas ou tokens</li>
+            <li>Force push em branches compartilhadas</li>
+            <li>Deletar branches sem certeza</li>
+            <li>Ignorar conflitos</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>🎯 Nomenclatura de Branches</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Tipo</th>
+            <th>Prefixo</th>
+            <th>Exemplo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Nova funcionalidade</td>
+            <td><code>feat/</code></td>
+            <td><code>feat/tela-login</code></td>
+          </tr>
+          <tr>
+            <td>Correção de bug</td>
+            <td><code>fix/</code></td>
+            <td><code>fix/erro-calculo</code></td>
+          </tr>
+          <tr>
+            <td>Documentação</td>
+            <td><code>docs/</code></td>
+            <td><code>docs/readme</code></td>
+          </tr>
+          <tr>
+            <td>Refatoração</td>
+            <td><code>refactor/</code></td>
+            <td><code>refactor/api-service</code></td>
+          </tr>
+          <tr>
+            <td>Teste</td>
+            <td><code>test/</code></td>
+            <td><code>test/unit-tests</code></td>
+          </tr>
+          <tr>
+            <td>Correção urgente</td>
+            <td><code>hotfix/</code></td>
+            <td><code>hotfix/security-bug</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>🔧 Comandos Úteis do Dia a Dia</h3>
+      <div class="grid">
+        <div class="grid-item">
+          <h4>Ver estado atual</h4>
+          <pre><code>git status</code></pre>
+        </div>
+        <div class="grid-item">
+          <h4>Ver histórico</h4>
+          <pre><code>git log --oneline</code></pre>
+        </div>
+        <div class="grid-item">
+          <h4>Ver diferenças</h4>
+          <pre><code>git diff</code></pre>
+        </div>
+        <div class="grid-item">
+          <h4>Desfazer mudanças</h4>
+          <pre><code>git checkout -- arquivo.py</code></pre>
+        </div>
+        <div class="grid-item">
+          <h4>Listar branches</h4>
+          <pre><code>git branch -a</code></pre>
+        </div>
+        <div class="grid-item">
+          <h4>Deletar branch local</h4>
+          <pre><code>git branch -d nome-branch</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Resolução de Problemas -->
+  <section>
+    <div class="card">
+      <h2><span class="section-number">🆘</span> Resolvendo Problemas Comuns</h2>
+      
+      <h3>1. Conflito no Merge</h3>
+      <div class="alert alert-warning">
+        <strong>Problema:</strong> <code>CONFLICT (content): Merge conflict in arquivo.py</code>
+      </div>
+      <pre><code># 1. Abrir arquivo com conflito
+# 2. Procurar marcadores:
+<<<<<<< HEAD
+seu código
+=======
+código da outra branch
+>>>>>>> branch-name
+
+# 3. Editar e manter código correto
+# 4. Remover marcadores
+# 5. Salvar arquivo
+
+git add arquivo.py
+git commit -m "merge: resolve conflito em arquivo.py"
+git push</code></pre>
+
+      <h3>2. Commitou na branch errada</h3>
+      <pre><code># Criar branch correta
+git checkout -b branch-correta
+
+# Voltar branch errada ao estado anterior
+git checkout branch-errada
+git reset --hard HEAD~1
+
+# Voltar para branch correta
+git checkout branch-correta</code></pre>
+
+      <h3>3. Esqueceu de criar branch antes de trabalhar</h3>
+      <pre><code># Guardar mudanças
+git stash
+
+# Criar branch
+git checkout -b nova-branch
+
+# Recuperar mudanças
+git stash pop</code></pre>
+
+      <h3>4. Precisa desfazer último commit</h3>
+      <pre><code># Desfazer mas manter código
+git reset --soft HEAD~1
+
+# Desfazer e descartar código (cuidado!)
+git reset --hard HEAD~1</code></pre>
+    </div>
+  </section>
+
+  <!-- Checklist -->
+  <section>
+    <div class="card">
+      <h2><span class="section-number">✅</span> Checklist Diário</h2>
+      
+      <h3>🌅 Começando o dia</h3>
+      <pre><code>□ git checkout dev
+□ git pull origin dev
+□ git checkout sua-branch
+□ git merge dev
+□ Verificar se há conflitos</code></pre>
+
+      <h3>💻 Durante o trabalho</h3>
+      <pre><code>□ Fazer mudanças no código
+□ Testar localmente
+□ git status (ver o que mudou)
+□ git add . (ou arquivos específicos)
+□ git commit -m "mensagem clara"
+□ git push origin sua-branch</code></pre>
+
+      <h3>🌆 Fim do dia</h3>
+      <pre><code>□ Garantir que commitou tudo
+□ git push (enviar para GitHub)
+□ Abrir ou atualizar PR se necessário
+□ Comunicar progresso ao time</code></pre>
+    </div>
+  </section>
+
+  <!-- Recursos -->
+  <section>
+    <div class="card">
+      <h2><span class="section-number">📚</span> Recursos Adicionais</h2>
+      
+      <div class="grid">
+        <div class="grid-item">
+          <h4>📖 Documentação</h4>
+          <ul>
+            <li><a href="https://git-scm.com/doc" class="btn">Git Docs</a></li>
+            <li><a href="https://docs.github.com" class="btn">GitHub Docs</a></li>
+          </ul>
+        </div>
+        <div class="grid-item">
+          <h4>🎓 Aprendizado</h4>
+          <ul>
+            <li><a href="https://learngitbranching.js.org" class="btn">Learn Git Branching</a></li>
+            <li><a href="https://gitimmersion.com" class="btn">Git Immersion</a></li>
+          </ul>
+        </div>
+        <div class="grid-item">
+          <h4>🛠️ Ferramentas</h4>
+          <ul>
+            <li>GitHub Desktop</li>
+            <li>GitKraken</li>
+            <li>VS Code (extensões Git)</li>
+          </ul>
+        </div>
+        <div class="grid-item">
+          <h4>💬 Ajuda</h4>
+          <ul>
+            <li>Slack do time</li>
+            <li>Stack Overflow</li>
+            <li>Pergunte aos colegas!</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dicionário Rápido -->
+  <section>
+    <div class="card">
+      <h2><span class="section-number">📖</span> Dicionário Rápido</h2>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>Termo</th>
+            <th>Significado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>Repository</code></td><td>Pasta do projeto com histórico</td></tr>
+          <tr><td><code>Clone</code></td><td>Copiar projeto do GitHub</td></tr>
+          <tr><td><code>Branch</code></td><td>Linha de desenvolvimento isolada</td></tr>
+          <tr><td><code>Commit</code></td><td>Salvar progresso com mensagem</td></tr>
+          <tr><td><code>Push</code></td><td>Enviar commits para GitHub</td></tr>
+          <tr><td><code>Pull</code></td><td>Baixar atualizações do GitHub</td></tr>
+          <tr><td><code>Merge</code></td><td>Juntar duas branches</td></tr>
+          <tr><td><code>Pull Request</code></td><td>Pedido de revisão de código</td></tr>
+          <tr><td><code>Conflict</code></td><td>Duas pessoas mudaram mesma linha</td></tr>
+          <tr><td><code>Staging</code></td><td>Preparar arquivos para commit</td></tr>
+          <tr><td><code>Remote</code></td><td>Repositório no GitHub</td></tr>
+          <tr><td><code>Origin</code></td><td>Nome padrão do remote</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<!-- Footer -->
+<footer>
+  <p>Criado por <span class="footer-gradient">Michael Oliveira</span> para o time <span class="footer-gradient">TudoGestão+</span></p>
+  <p style="margin-top: 1rem; color: #666;">
+    Liquid Glass UI Design ✨ | Última atualização: Outubro 2025
+  </p>
+</footer>
+
+<!-- Scroll to top button -->
+<button class="scroll-top" onclick="scrollToTop()">↑</button>
+
+<script>
+// Smooth scroll para seções
+function scrollToSection(id) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// Scroll to top
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Mostrar/esconder botão scroll to top
+window.addEventListener('scroll', function() {
+  const scrollBtn = document.querySelector('.scroll-top');
+  if (window.pageYOffset > 300) {
+    scrollBtn.classList.add('visible');
+  } else {
+    scrollBtn.classList.remove('visible');
+  }
+});
+
+// Adicionar classe active nos botões de navegação
+const navBtns = document.querySelectorAll('.nav-btn');
+const sections = document.querySelectorAll('section');
+
+window.addEventListener('scroll', function() {
+  let current = '';
+  sections.forEach(section => {
+    const sectionTop = section.offsetTop;
+    const sectionHeight = section.clientHeight;
+    if (window.pageYOffset >= sectionTop - 200) {
+      current = section.getAttribute('id');
+    }
+  });
+
+  navBtns.forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.textContent.toLowerCase().includes(current)) {
+      btn.classList.add('active');
+    }
+  });
+});
+</script>
+
+</body>
+</html>
