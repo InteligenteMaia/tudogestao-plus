@@ -1,5 +1,5 @@
 # TudoGestão+ - Sistema ERP para Pequenas Empresas
-# Este código ele calcula o fluxo de caixa
+
 ![Python](https://img.shields.io/badge/python-3.11-blue)
 ![FastAPI](https://img.shields.io/badge/fastapi-0.104-green)
 ![Streamlit](https://img.shields.io/badge/streamlit-1.28-red)
