@@ -31,6 +31,7 @@
     color: var(--text);
     overflow-x: hidden;
     line-height: 1.6;
+    padding-top: 0;
   }
 
   /* Animated Background */
@@ -53,16 +54,27 @@
     0%, 100% { transform: translateY(0) rotate(0deg); }
     50% { transform: translateY(-20px) rotate(5deg); }
   }
-  /* Header */
+
+  /* Header - Fixed e Inteligente */
   header {
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 1000;
     backdrop-filter: blur(20px) saturate(180%);
-    background: rgba(10, 10, 10, 0.8);
+    background: rgba(10, 10, 10, 0.95);
     border-bottom: 1px solid var(--card-border);
     padding: 1.5rem 2rem;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  header.hidden {
+    transform: translateY(-100%);
+    opacity: 0;
   }
 
   .header-content {
@@ -120,11 +132,18 @@
     transform: translateY(-2px);
   }
 
+  .nav-btn.active {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-color: var(--primary);
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+  }
+
   /* Container */
   .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+    margin-top: 180px; /* Compensa header fixo */
   }
 
   /* Section */
@@ -209,6 +228,12 @@
     font-size: 1.5rem;
     margin: 1.5rem 0 1rem;
     color: var(--primary);
+  }
+
+  h4 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    color: var(--accent);
   }
 
   /* Text */
@@ -325,12 +350,6 @@
     transform: scale(1.05);
   }
 
-  .grid-item h4 {
-    color: var(--primary);
-    margin-bottom: 0.5rem;
-    font-size: 1.2rem;
-  }
-
   /* Badge */
   .badge {
     display: inline-block;
@@ -346,25 +365,6 @@
   .badge-success { background: rgba(16, 185, 129, 0.2); color: var(--success); }
   .badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
   .badge-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
-
-  /* Button */
-  .btn {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    border: none;
-    border-radius: 12px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-  }
-
-  .btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4);
-  }
 
   /* Table */
   table {
@@ -455,7 +455,7 @@
     color: #fca5a5;
   }
 
-  /* Visual Flow */
+  /* Flow */
   .flow-container {
     display: flex;
     flex-direction: column;
@@ -494,6 +494,19 @@
   .flow-arrow {
     font-size: 2rem;
     color: var(--primary);
+    text-align: center;
+  }
+
+  /* Links */
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  a:hover {
+    color: var(--primary);
+    text-decoration: underline;
   }
 
   /* Footer */
@@ -510,16 +523,6 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: 600;
-  }
-
-  /* Responsive */
-  @media (max-width: 768px) {
-    .logo { font-size: 2rem; }
-    h2 { font-size: 1.5rem; }
-    .section-number { width: 2.5rem; height: 2.5rem; font-size: 1.2rem; }
-    .grid { grid-template-columns: 1fr; }
-    nav { flex-direction: column; }
-    .container { padding: 1rem; }
   }
 
   /* Scroll to top button */
@@ -549,14 +552,15 @@
     box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4);
   }
 
-  /* Animations */
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
-
-  .pulse {
-    animation: pulse 2s ease-in-out infinite;
+  /* Responsive */
+  @media (max-width: 768px) {
+    .logo { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+    .section-number { width: 2.5rem; height: 2.5rem; font-size: 1.2rem; }
+    .grid { grid-template-columns: 1fr; }
+    nav { flex-direction: column; }
+    .container { padding: 1rem; margin-top: 220px; }
+    header { padding: 1rem; }
   }
 </style>
 </head>
@@ -565,10 +569,11 @@
 <!-- Header -->
 <header>
   <div class="header-content">
-    <div class="logo">🚀 TudoGestão+ Git & GitHub</div>
+    <div class="logo">💎 TudoGestão+ Git & GitHub</div>
     <p class="subtitle">Guia Completo de Workflow para Desenvolvimento em Equipe</p>
     <nav>
       <button class="nav-btn" onclick="scrollToSection('intro')">Introdução</button>
+      <button class="nav-btn" onclick="scrollToSection('config')">Configuração</button>
       <button class="nav-btn" onclick="scrollToSection('conceitos')">Conceitos</button>
       <button class="nav-btn" onclick="scrollToSection('estrutura')">Estrutura</button>
       <button class="nav-btn" onclick="scrollToSection('fluxo')">Fluxo</button>
@@ -582,11 +587,11 @@
   <!-- Introdução -->
   <section id="intro">
     <div class="card">
-      <h2><span class="section-number">📚</span> Introdução</h2>
+      <h2><span class="section-number">📱</span> Introdução</h2>
       
       <div class="grid">
         <div class="grid-item">
-          <h4>💻 O que é Git?</h4>
+          <h4>⚡️ O que é Git?</h4>
           <p>Sistema de <span class="highlight">controle de versão</span> que registra todas as mudanças no código, como uma máquina do tempo para o projeto.</p>
           <span class="badge badge-primary">Local</span>
           <span class="badge badge-success">Versionamento</span>
@@ -602,6 +607,120 @@
 
       <div class="alert alert-info">
         <strong>💡 Por que usar?</strong> Com Git e GitHub, múltiplas pessoas podem trabalhar no mesmo projeto simultaneamente sem sobrescrever o trabalho umas das outras!
+      </div>
+    </div>
+  </section>
+
+  <!-- Configuração Inicial -->
+  <section id="config">
+    <div class="card">
+      <h2><span class="section-number">⚙️</span> Configuração Inicial</h2>
+      
+      <p>Antes de começar, é essencial configurar o Git corretamente no seu computador.</p>
+
+      <h3>🔧 Instalando o Git</h3>
+      <div class="grid">
+        <div class="grid-item">
+          <h4>🪟 Windows</h4>
+          <ol>
+            <li>Acesse <a href="https://git-scm.com">git-scm.com</a></li>
+            <li>Baixe o instalador</li>
+            <li>Execute e siga o wizard</li>
+            <li>Abra Git Bash</li>
+          </ol>
+        </div>
+        
+        <div class="grid-item">
+          <h4>🍎 macOS</h4>
+          <pre><code># Via Homebrew
+brew install git
+
+# Ou baixar de
+# git-scm.com</code></pre>
+        </div>
+
+        <div class="grid-item">
+          <h4>🐧 Linux</h4>
+          <pre><code># Ubuntu/Debian
+sudo apt-get install git
+
+# Fedora
+sudo dnf install git</code></pre>
+        </div>
+      </div>
+
+      <h3>👤 Configurando Identidade</h3>
+      <pre><code># Configurar nome (obrigatório)
+git config --global user.name "Seu Nome Completo"
+
+# Configurar email (obrigatório)
+git config --global user.email "seu.email@empresa.com"
+
+# Verificar configurações
+git config --list</code></pre>
+
+      <div class="alert alert-warning">
+        <strong>⚠️ Importante:</strong> Use o mesmo email da sua conta GitHub!
+      </div>
+
+      <h3>🎨 Configurações Opcionais Úteis</h3>
+      <pre><code># Editor padrão (VS Code)
+git config --global core.editor "code --wait"
+
+# Cores no terminal
+git config --global color.ui auto
+
+# Nome da branch padrão
+git config --global init.defaultBranch main
+
+# Aliases úteis
+git config --global alias.st status
+git config --global alias.co checkout
+git config --global alias.br branch
+git config --global alias.ci commit</code></pre>
+
+      <h3>🔐 Configurando SSH (Recomendado)</h3>
+      <p>SSH é mais seguro que HTTPS e não pede senha a cada push.</p>
+      
+      <div class="timeline">
+        <div class="timeline-item">
+          <h4>1. Gerar chave SSH</h4>
+          <pre><code>ssh-keygen -t ed25519 -C "seu.email@empresa.com"</code></pre>
+          <p>Pressione Enter 3 vezes (usa configurações padrão)</p>
+        </div>
+
+        <div class="timeline-item">
+          <h4>2. Copiar chave pública</h4>
+          <pre><code># Windows
+cat ~/.ssh/id_ed25519.pub | clip
+
+# macOS
+cat ~/.ssh/id_ed25519.pub | pbcopy
+
+# Linux
+cat ~/.ssh/id_ed25519.pub</code></pre>
+        </div>
+
+        <div class="timeline-item">
+          <h4>3. Adicionar no GitHub</h4>
+          <ol>
+            <li>GitHub → Settings</li>
+            <li>SSH and GPG keys</li>
+            <li>New SSH key</li>
+            <li>Cole a chave</li>
+            <li>Add SSH key</li>
+          </ol>
+        </div>
+
+        <div class="timeline-item">
+          <h4>4. Testar conexão</h4>
+          <pre><code>ssh -T git@github.com</code></pre>
+          <p>Deve aparecer: "Hi username! You've successfully authenticated..."</p>
+        </div>
+      </div>
+
+      <div class="alert alert-success">
+        <strong>✅ Pronto!</strong> Agora você pode usar Git e GitHub sem digitar senha!
       </div>
     </div>
   </section>
@@ -721,11 +840,7 @@ main (produção)
           <ul>
             <li>michael-dev</li>
             <li>larissa-dev</li>
-            <li>felipe-dev</li>
-            <li>rubens-dev</li>
-            <li>eliseu-dev</li>
-            <li>najla-dev</li>
-            <li>thaynara-dev</li>
+            <li>kaique-dev</li>
           </ul>
         </div>
 
@@ -993,10 +1108,74 @@ Related to #38</code></pre>
     </div>
   </section>
 
+  <!-- Comandos Úteis -->
+  <section>
+    <div class="card">
+      <h2><span class="section-number">🛠️</span> Comandos Git Essenciais</h2>
+      
+      <h3>📊 Informação e Status</h3>
+      <div class="grid">
+        <div class="grid-item">
+          <h4>Ver estado</h4>
+          <pre><code>git status</code></pre>
+        </div>
+        <div class="grid-item">
+          <h4>Ver histórico</h4>
+          <pre><code>git log --oneline</code></pre>
+        </div>
+        <div class="grid-item">
+          <h4>Ver diferenças</h4>
+          <pre><code>git diff</code></pre>
+        </div>
+        <div class="grid-item">
+          <h4>Listar branches</h4>
+          <pre><code>git branch -a</code></pre>
+        </div>
+      </div>
+
+      <h3>🔄 Trabalhando com Mudanças</h3>
+      <div class="grid">
+        <div class="grid-item">
+          <h4>Desfazer mudança</h4>
+          <pre><code>git checkout -- arquivo.py</code></pre>
+        </div>
+        <div class="grid-item">
+          <h4>Remover do stage</h4>
+          <pre><code>git reset HEAD arquivo.py</code></pre>
+        </div>
+        <div class="grid-item">
+          <h4>Guardar mudanças</h4>
+          <pre><code>git stash
+git stash pop</code></pre>
+        </div>
+        <div class="grid-item">
+          <h4>Desfazer commit</h4>
+          <pre><code>git reset --soft HEAD~1</code></pre>
+        </div>
+      </div>
+
+      <h3>🌿 Gerenciamento de Branches</h3>
+      <pre><code># Criar branch
+git checkout -b nova-branch
+
+# Trocar de branch
+git checkout dev
+
+# Ver branches mergeadas
+git branch --merged
+
+# Deletar branch local
+git branch -d nome-branch
+
+# Deletar branch remota
+git push origin --delete nome-branch</code></pre>
+    </div>
+  </section>
+
   <!-- Boas Práticas -->
   <section id="praticas">
     <div class="card">
-      <h2><span class="section-number">⭐</span> Boas Práticas e Regras de Ouro</h2>
+      <h2><span class="section-number">⭐️</span> Boas Práticas e Regras de Ouro</h2>
       
       <div class="grid">
         <div class="grid-item">
@@ -1070,34 +1249,6 @@ Related to #38</code></pre>
           </tr>
         </tbody>
       </table>
-
-      <h3>🔧 Comandos Úteis do Dia a Dia</h3>
-      <div class="grid">
-        <div class="grid-item">
-          <h4>Ver estado atual</h4>
-          <pre><code>git status</code></pre>
-        </div>
-        <div class="grid-item">
-          <h4>Ver histórico</h4>
-          <pre><code>git log --oneline</code></pre>
-        </div>
-        <div class="grid-item">
-          <h4>Ver diferenças</h4>
-          <pre><code>git diff</code></pre>
-        </div>
-        <div class="grid-item">
-          <h4>Desfazer mudanças</h4>
-          <pre><code>git checkout -- arquivo.py</code></pre>
-        </div>
-        <div class="grid-item">
-          <h4>Listar branches</h4>
-          <pre><code>git branch -a</code></pre>
-        </div>
-        <div class="grid-item">
-          <h4>Deletar branch local</h4>
-          <pre><code>git branch -d nome-branch</code></pre>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -1153,6 +1304,130 @@ git reset --soft HEAD~1
 
 # Desfazer e descartar código (cuidado!)
 git reset --hard HEAD~1</code></pre>
+
+      <h3>5. Push rejeitado (divergência)</h3>
+      <pre><code># Ver o que mudou
+git fetch origin
+git log origin/branch-name..HEAD
+
+# Opção 1: Merge
+git pull origin branch-name
+
+# Opção 2: Rebase (histórico mais limpo)
+git pull --rebase origin branch-name</code></pre>
+
+      <div class="alert alert-info">
+        <strong>💡 SOS:</strong> Antes de qualquer comando destrutivo, faça backup: <code>git branch backup-$(date +%s)</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- Segurança -->
+  <section>
+    <div class="card">
+      <h2><span class="section-number">🔐</span> Segurança e .gitignore</h2>
+      
+      <h3>🚨 Nunca commitar</h3>
+      <div class="grid">
+        <div class="grid-item">
+          <h4>🔑 Credenciais</h4>
+          <ul>
+            <li>Senhas</li>
+            <li>API keys</li>
+            <li>Tokens de acesso</li>
+            <li>Chaves SSH privadas</li>
+            <li>Certificados</li>
+          </ul>
+        </div>
+
+        <div class="grid-item">
+          <h4>📁 Arquivos sensíveis</h4>
+          <ul>
+            <li>.env (variáveis de ambiente)</li>
+            <li>config/secrets.py</li>
+            <li>credentials.json</li>
+            <li>*.key, *.pem</li>
+            <li>database backups</li>
+          </ul>
+        </div>
+
+        <div class="grid-item">
+          <h4>💾 Arquivos grandes</h4>
+          <ul>
+            <li>Bancos de dados</li>
+            <li>Vídeos</li>
+            <li>node_modules/</li>
+            <li>Logs grandes</li>
+          </ul>
+        </div>
+
+        <div class="grid-item">
+          <h4>🗑️ Arquivos temporários</h4>
+          <ul>
+            <li>*.pyc, __pycache__</li>
+            <li>*.swp, *.tmp</li>
+            <li>.DS_Store</li>
+            <li>Thumbs.db</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>📝 .gitignore essencial</h3>
+      <pre><code># Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+env/
+.env
+*.egg-info/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Segurança
+.env
+.env.local
+secrets.json
+*.key
+*.pem
+credentials/
+
+# Banco de dados
+*.db
+*.sqlite
+
+# Logs
+*.log
+logs/
+
+# Build
+dist/
+build/
+
+# Testes
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Node (se usar)
+node_modules/</code></pre>
+
+      <div class="alert alert-danger">
+        <strong>⚠️ Se commitou senha:</strong>
+        <ol>
+          <li><strong>TROCAR a senha imediatamente!</strong></li>
+          <li>Remover do Git com <code>git filter-branch</code></li>
+          <li>Avisar o time</li>
+        </ol>
+      </div>
     </div>
   </section>
 
@@ -1193,15 +1468,15 @@ git reset --hard HEAD~1</code></pre>
         <div class="grid-item">
           <h4>📖 Documentação</h4>
           <ul>
-            <li><a href="https://git-scm.com/doc" class="btn">Git Docs</a></li>
-            <li><a href="https://docs.github.com" class="btn">GitHub Docs</a></li>
+            <li><a href="https://git-scm.com/doc">Git Docs</a></li>
+            <li><a href="https://docs.github.com">GitHub Docs</a></li>
           </ul>
         </div>
         <div class="grid-item">
           <h4>🎓 Aprendizado</h4>
           <ul>
-            <li><a href="https://learngitbranching.js.org" class="btn">Learn Git Branching</a></li>
-            <li><a href="https://gitimmersion.com" class="btn">Git Immersion</a></li>
+            <li><a href="https://learngitbranching.js.org">Learn Git Branching</a></li>
+            <li><a href="https://gitimmersion.com">Git Immersion</a></li>
           </ul>
         </div>
         <div class="grid-item">
@@ -1268,11 +1543,51 @@ git reset --hard HEAD~1</code></pre>
 <button class="scroll-top" onclick="scrollToTop()">↑</button>
 
 <script>
+// Variáveis para controlar scroll do header
+let lastScrollTop = 0;
+let scrollThreshold = 100;
+const header = document.querySelector('header');
+
+// Controlar visibilidade do header baseado em scroll
+window.addEventListener('scroll', function() {
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  
+  // Se está no topo, sempre mostrar
+  if (scrollTop < 100) {
+    header.classList.remove('hidden');
+  }
+  // Scrollando para baixo - esconder header
+  else if (scrollTop > lastScrollTop && scrollTop > scrollThreshold) {
+    header.classList.add('hidden');
+  }
+  // Scrollando para cima - mostrar header
+  else if (scrollTop < lastScrollTop) {
+    header.classList.remove('hidden');
+  }
+  
+  lastScrollTop = scrollTop;
+  
+  // Controlar botão scroll to top
+  const scrollBtn = document.querySelector('.scroll-top');
+  if (scrollTop > 300) {
+    scrollBtn.classList.add('visible');
+  } else {
+    scrollBtn.classList.remove('visible');
+  }
+});
+
 // Smooth scroll para seções
 function scrollToSection(id) {
   const element = document.getElementById(id);
   if (element) {
-    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const headerHeight = header.offsetHeight;
+    const elementPosition = element.getBoundingClientRect().top;
+    const offsetPosition = elementPosition + window.pageYOffset - headerHeight - 20;
+    
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: 'smooth'
+    });
   }
 }
 
@@ -1281,36 +1596,50 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Mostrar/esconder botão scroll to top
-window.addEventListener('scroll', function() {
-  const scrollBtn = document.querySelector('.scroll-top');
-  if (window.pageYOffset > 300) {
-    scrollBtn.classList.add('visible');
-  } else {
-    scrollBtn.classList.remove('visible');
-  }
+// Intersection Observer para ativar botão da seção visível
+const observerOptions = {
+  root: null,
+  rootMargin: '-150px',
+  threshold: 0.2
+};
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const sectionId = entry.target.getAttribute('id');
+      const navBtns = document.querySelectorAll('.nav-btn');
+      
+      navBtns.forEach(btn => {
+        btn.classList.remove('active');
+        const btnText = btn.textContent.toLowerCase();
+        
+        // Mapear seções para botões
+        const mapping = {
+          'intro': 'introdução',
+          'config': 'configuração',
+          'conceitos': 'conceitos',
+          'estrutura': 'estrutura',
+          'fluxo': 'fluxo',
+          'praticas': 'práticas'
+        };
+        
+        if (mapping[sectionId] && btnText.includes(mapping[sectionId])) {
+          btn.classList.add('active');
+        }
+      });
+    }
+  });
+}, observerOptions);
+
+// Observar todas as seções com ID
+const sections = document.querySelectorAll('section[id]');
+sections.forEach(section => {
+  observer.observe(section);
 });
 
-// Adicionar classe active nos botões de navegação
-const navBtns = document.querySelectorAll('.nav-btn');
-const sections = document.querySelectorAll('section');
-
-window.addEventListener('scroll', function() {
-  let current = '';
-  sections.forEach(section => {
-    const sectionTop = section.offsetTop;
-    const sectionHeight = section.clientHeight;
-    if (window.pageYOffset >= sectionTop - 200) {
-      current = section.getAttribute('id');
-    }
-  });
-
-  navBtns.forEach(btn => {
-    btn.classList.remove('active');
-    if (btn.textContent.toLowerCase().includes(current)) {
-      btn.classList.add('active');
-    }
-  });
+// Animação inicial
+window.addEventListener('load', function() {
+  document.body.style.opacity = 1;
 });
 </script>
 
