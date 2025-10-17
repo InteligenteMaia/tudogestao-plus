@@ -20,6 +20,7 @@ TudoGestão+ é um sistema ERP completo desenvolvido em Python, focado em micro 
 | Rubens Neto | Backend Developer | @rubens-neto | rubenscbn@uni9.edu.br |
 | Najla Cardeal | QA/Designer | @najla-cardeal | najla.vianac@uni9.edu.br |
 | Thaynara Ribeiro | Full Stack | @thaynara-ribeiro | thaynara.ribeiro@uni9.edu.br |
+| Eliseu Junior | Full Stack | @eliseu-junior | thaynara.ribeiro@uni9.edu.br |
 
 ## 🚀 Quick Start
 
