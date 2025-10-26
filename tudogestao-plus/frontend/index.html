@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TudoGestão+ | Sistema ERP Profissional</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-chart-line"></i> TudoGestão+</h2>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="#" data-page="dashboard" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="#" data-page="projetos"><i class="fas fa-project-diagram"></i> Projetos</a></li>
+                <li><a href="#" data-page="tarefas"><i class="fas fa-tasks"></i> Tarefas</a></li>
+                <li><a href="#" data-page="equipe"><i class="fas fa-users"></i> Equipe</a></li>
+                <li><a href="#" data-page="relatorios"><i class="fas fa-file-alt"></i> Relatórios</a></li>
+                <li><a href="#" data-page="documentos"><i class="fas fa-folder"></i> Documentos</a></li>
+                <li><a href="#" data-page="validacoes"><i class="fas fa-check-circle"></i> Validações</a></li>
+                <li><a href="#" data-page="github"><i class="fab fa-github"></i> GitHub</a></li>
+                <li><a href="#" data-page="comunicacao"><i class="fas fa-comment-dots"></i> Comunicação</a></li>
+                <li><a href="#" data-page="abnt"><i class="fas fa-file-pdf"></i> Normas ABNT</a></li>
+                <li><a href="#" data-page="configuracoes"><i class="fas fa-cog"></i> Configurações</a></li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <img src="https://ui-avatars.com/api/?name=Admin&background=4f46e5&color=fff" alt="User">
+                <div>
+                    <p class="user-name">Administrador</p>
+                    <p class="user-role">Gerente de Projetos</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1 id="pageTitle">Dashboard</h1>
+                <p class="breadcrumb" id="breadcrumb">Início > Dashboard</p>
+            </div>
+            <div class="header-right">
+                <button class="btn-icon" id="notificationsBtn">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </button>
+                <button class="btn-icon" id="messagesBtn">
+                    <i class="fas fa-envelope"></i>
+                    <span class="badge">5</span>
+                </button>
+                <button class="btn-primary" id="newProjectBtn">
+                    <i class="fas fa-plus"></i> Novo Projeto
+                </button>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="content-area" id="contentArea">
+            <!-- Dashboard Page -->
+            <div class="page-content active" id="dashboard-page">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-blue">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>12</h3>
+                            <p>Projetos Ativos</p>
+                        </div>
+                        <div class="stat-progress">
+                            <div class="progress-bar" style="width: 75%"></div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon bg-green">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>48</h3>
+                            <p>Tarefas em Andamento</p>
+                        </div>
+                        <div class="stat-progress">
+                            <div class="progress-bar" style="width: 60%"></div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon bg-orange">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>8</h3>
+                            <p>Pendências</p>
+                        </div>
+                        <div class="stat-progress">
+                            <div class="progress-bar" style="width: 40%"></div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon bg-purple">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>15</h3>
+                            <p>Membros da Equipe</p>
+                        </div>
+                        <div class="stat-progress">
+                            <div class="progress-bar" style="width: 90%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="charts-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Progresso dos Projetos</h3>
+                            <select class="select-sm">
+                                <option>Últimos 7 dias</option>
+                                <option>Últimos 30 dias</option>
+                                <option>Últimos 90 dias</option>
+                            </select>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="projectsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Distribuição de Tarefas</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="tasksChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Atividades Recentes</h3>
+                        <a href="#" class="link">Ver todas</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-icon bg-blue">
+                                    <i class="fas fa-file"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h4>Documento enviado para validação</h4>
+                                    <p>Relatório Final - Projeto ERP Financeiro</p>
+                                    <span class="timeline-time">Há 2 horas</span>
+                                </div>
+                            </div>
+
+                            <div class="timeline-item">
+                                <div class="timeline-icon bg-green">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h4>Tarefa concluída</h4>
+                                    <p>Implementação do Frontend - Fase I</p>
+                                    <span class="timeline-time">Há 5 horas</span>
+                                </div>
+                            </div>
+
+                            <div class="timeline-item">
+                                <div class="timeline-icon bg-purple">
+                                    <i class="fab fa-github"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h4>Commit realizado</h4>
+                                    <p>15 arquivos atualizados no repositório</p>
+                                    <span class="timeline-time">Há 1 dia</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projetos Page -->
+            <div class="page-content" id="projetos-page">
+                <div class="page-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Buscar projetos...">
+                    </div>
+                    <div class="filter-buttons">
+                        <button class="btn-filter active">Todos</button>
+                        <button class="btn-filter">Em Andamento</button>
+                        <button class="btn-filter">Concluídos</button>
+                        <button class="btn-filter">Atrasados</button>
+                    </div>
+                </div>
+
+                <div class="projects-grid" id="projectsGrid">
+                    <!-- Projects will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Tarefas Page -->
+            <div class="page-content" id="tarefas-page">
+                <div class="kanban-board" id="kanbanBoard">
+                    <div class="kanban-column">
+                        <div class="column-header">
+                            <h3>A Fazer <span class="count">5</span></h3>
+                            <button class="btn-icon-sm"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <div class="column-content" id="todoColumn">
+                            <!-- Tasks will be loaded here -->
+                        </div>
+                    </div>
+
+                    <div class="kanban-column">
+                        <div class="column-header">
+                            <h3>Em Progresso <span class="count">3</span></h3>
+                            <button class="btn-icon-sm"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <div class="column-content" id="inProgressColumn">
+                            <!-- Tasks will be loaded here -->
+                        </div>
+                    </div>
+
+                    <div class="kanban-column">
+                        <div class="column-header">
+                            <h3>Em Revisão <span class="count">2</span></h3>
+                            <button class="btn-icon-sm"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <div class="column-content" id="reviewColumn">
+                            <!-- Tasks will be loaded here -->
+                        </div>
+                    </div>
+
+                    <div class="kanban-column">
+                        <div class="column-header">
+                            <h3>Concluído <span class="count">8</span></h3>
+                        </div>
+                        <div class="column-content" id="doneColumn">
+                            <!-- Tasks will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Equipe Page -->
+            <div class="page-content" id="equipe-page">
+                <div class="team-grid" id="teamGrid">
+                    <!-- Team members will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Relatórios Page -->
+            <div class="page-content" id="relatorios-page">
+                <div class="reports-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Gerar Relatório</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="reportForm">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Tipo de Relatório</label>
+                                        <select id="reportType" required>
+                                            <option value="">Selecione...</option>
+                                            <option value="projeto">Projeto Completo</option>
+                                            <option value="progresso">Relatório de Progresso</option>
+                                            <option value="atividades">Atividades Realizadas</option>
+                                            <option value="equipe">Performance da Equipe</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Projeto</label>
+                                        <select id="reportProject" required>
+                                            <option value="">Selecione...</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Período</label>
+                                        <input type="date" id="reportStartDate" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Até</label>
+                                        <input type="date" id="reportEndDate" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Formato</label>
+                                    <div class="radio-group">
+                                        <label><input type="radio" name="format" value="pdf" checked> PDF</label>
+                                        <label><input type="radio" name="format" value="docx"> DOCX</label>
+                                        <label><input type="radio" name="format" value="abnt"> PDF (ABNT)</label>
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn-primary">
+                                        <i class="fas fa-file-export"></i> Gerar Relatório
+                                    </button>
+                                    <button type="button" class="btn-secondary" id="sendReportEmail">
+                                        <i class="fas fa-envelope"></i> Enviar por Email
+                                    </button>
+                                    <button type="button" class="btn-success" id="sendReportWhatsApp">
+                                        <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documentos Page -->
+            <div class="page-content" id="documentos-page">
+                <div class="documents-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Gerenciamento de Documentos</h3>
+                            <button class="btn-primary" id="uploadDocBtn">
+                                <i class="fas fa-upload"></i> Upload
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="folder-tree" id="folderTree">
+                                <!-- Folder structure will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Validações Page -->
+            <div class="page-content" id="validacoes-page">
+                <div class="validations-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Pendentes de Validação</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="validations-list" id="validationsList">
+                                <!-- Validations will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GitHub Page -->
+            <div class="page-content" id="github-page">
+                <div class="github-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Integração GitHub</h3>
+                            <button class="btn-primary" id="connectGitHub">
+                                <i class="fab fa-github"></i> Conectar
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="githubContent">
+                                <!-- GitHub integration content -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comunicação Page -->
+            <div class="page-content" id="comunicacao-page">
+                <div class="communication-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Orientações e Comunicações</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="communicationForm">
+                                <div class="form-group">
+                                    <label>Destinatários</label>
+                                    <select id="recipients" multiple>
+                                        <!-- Team members will be loaded here -->
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Tipo de Comunicação</label>
+                                    <select id="commType">
+                                        <option value="orientacao">Orientação de Tarefa</option>
+                                        <option value="feedback">Feedback</option>
+                                        <option value="alerta">Alerta</option>
+                                        <option value="atualizacao">Atualização</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Mensagem</label>
+                                    <textarea id="commMessage" rows="6" required></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Enviar via:</label>
+                                    <div class="checkbox-group">
+                                        <label><input type="checkbox" name="sendVia" value="email" checked> Email</label>
+                                        <label><input type="checkbox" name="sendVia" value="whatsapp"> WhatsApp</label>
+                                        <label><input type="checkbox" name="sendVia" value="sistema"> Sistema</label>
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn-primary">
+                                        <i class="fas fa-paper-plane"></i> Enviar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABNT Page -->
+            <div class="page-content" id="abnt-page">
+                <div class="abnt-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Formatação ABNT</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="abntForm">
+                                <div class="form-group">
+                                    <label>Projeto</label>
+                                    <select id="abntProject" required>
+                                        <option value="">Selecione...</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Tipo de Documento</label>
+                                    <select id="abntDocType" required>
+                                        <option value="tcc">TCC</option>
+                                        <option value="artigo">Artigo</option>
+                                        <option value="relatorio">Relatório Técnico</option>
+                                        <option value="monografia">Monografia</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn-primary">
+                                        <i class="fas fa-file-pdf"></i> Gerar Documento ABNT
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configurações Page -->
+            <div class="page-content" id="configuracoes-page">
+                <div class="settings-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Configurações do Sistema</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="settings-tabs">
+                                <button class="settings-tab active" data-tab="geral">Geral</button>
+                                <button class="settings-tab" data-tab="usuarios">Usuários</button>
+                                <button class="settings-tab" data-tab="integracoes">Integrações</button>
+                                <button class="settings-tab" data-tab="notificacoes">Notificações</button>
+                            </div>
+
+                            <div class="settings-content" id="settingsContent">
+                                <!-- Settings content will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div class="modal" id="projectModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Novo Projeto</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="newProjectForm">
+                    <div class="form-group">
+                        <label>Nome do Projeto</label>
+                        <input type="text" id="projectName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <textarea id="projectDescription" rows="4" required></textarea>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Data de Início</label>
+                            <input type="date" id="projectStartDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Data de Término</label>
+                            <input type="date" id="projectEndDate" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Gerente do Projeto</label>
+                        <select id="projectManager" required>
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Membros da Equipe</label>
+                        <select id="projectTeam" multiple>
+                            <!-- Team members will be loaded here -->
+                        </select>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeModal('projectModal')">Cancelar</button>
+                        <button type="submit" class="btn-primary">Criar Projeto</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
