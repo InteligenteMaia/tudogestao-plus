@@ -1,456 +1,340 @@
-# 💰 TudoGestão+ Financeiro | ERP para Micro e Pequenas Empresas
+# 🚀 TudoGestão+ - Sistema de Gestão Empresarial
 
-<div align="center">
+Sistema ERP completo para gestão de pequenas e médias empresas, desenvolvido com tecnologias modernas e design inspirado na Apple.
 
-![Python](https://img.shields.io/badge/Python-3.11+-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)
-![Docker](https://img.shields.io/badge/Docker-compose-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+## 👥 Equipe de Desenvolvimento
 
-**ERP Completo para Gestão Financeira com Emissão de NF-e, Open Banking e Conciliação Bancária**
+- 👨‍💻 **Michael Santos** - Tech Lead & Arquitetura
+- ⚙️ **Rubens Neto** - Backend Developer
+- 💻 **Felipe Gonzaga** - Frontend Developer
+- 🔧 **Thaynara Ribeiro** - Full Stack Developer
+- 🚀 **Eliseu Junior** - Full Stack Developer
+- 💼 **Larissa Oliveira** - Product Manager
+- 🎨 **Najla Cardeal** - QA & Designer
 
-[Documentação](#) • [API](#api) • [Instalação](#instalação) • [Equipe](#equipe)
-
-</div>
-
----
-
-## 📋 Sumário Executivo
-
-TudoGestão+ Financeiro é um ERP leve para micro e pequenas empresas construído em **Python** com:
-- **Backend:** FastAPI + PostgreSQL + Redis/Celery
-- **Frontend:** Streamlit (interface simples e moderna)
-- **Funcionalidades:** Gestão financeira, emissão de NF-e, conciliação bancária automática, relatórios DRE/Fluxo de Caixa
-- **Diferenciais:** Multi-empresa, Open Banking, UX simples, preço acessível
-
-**Objetivo:** Democratizar gestão financeira profissional para pequenos negócios.
-
----
-
-## 🎯 Escopo Funcional - MVP
-
-### ✅ Fase I (MVP - Entrega Obrigatória)
-
-1. **Autenticação & Multi-tenant**
-   - Login JWT + Refresh Token
-   - Multi-empresa (owner/admin/user roles)
-   - Gestão de usuários e permissões
-
-2. **Gestão Financeira**
-   - CRUD completo de transações (receitas/despesas)
-   - Categorias personalizáveis
-   - Contas bancárias
-   - Clientes e fornecedores
-
-3. **Dashboard Analítico**
-   - KPIs em tempo real (saldo, receitas, despesas)
-   - Gráficos interativos
-   - Transações recentes
-
-4. **Emissão de NF-e**
-   - Integração SEFAZ-SP (microserviço isolado)
-   - Geração e assinatura XML
-   - Acompanhamento de status
-
-5. **Conciliação Bancária**
-   - Importação de extratos (mock Open Banking)
-   - Conciliação automática básica
-   - Matching de transações
-
-6. **Relatórios**
-   - DRE (Demonstração do Resultado do Exercício)
-   - Fluxo de Caixa
-   - Export PDF/Excel
-
-### 🚀 Fase II (Avançado)
-
-- Integrações reais Open Banking
-- WebSockets para atualizações em tempo real
-- Machine Learning para previsão de fluxo de caixa
-- PWA mobile
-- Rate limiting e load testing
-
----
-
-## 🏗️ Arquitetura
-
-### C4 - Nível 2 (Containers)
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                         TudoGestão+                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                               │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐  │
-│  │   Frontend   │───▶│     API      │───▶│  PostgreSQL  │  │
-│  │  Streamlit   │    │   FastAPI    │    │      15      │  │
-│  │  (port 8501) │    │  (port 8000) │    │  (port 5432) │  │
-│  └──────────────┘    └──────────────┘    └──────────────┘  │
-│                             │                                │
-│                             ▼                                │
-│                      ┌──────────────┐                        │
-│                      │    Redis     │                        │
-│                      │ Cache + Queue│                        │
-│                      │  (port 6379) │                        │
-│                      └──────────────┘                        │
-│                             │                                │
-│                             ▼                                │
-│                      ┌──────────────┐                        │
-│                      │    Celery    │                        │
-│                      │   Workers    │                        │
-│                      │  (async)     │                        │
-│                      └──────────────┘                        │
-│                                                               │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │            SEFAZ Service (Microserviço)               │   │
-│  │         NF-e SOAP Handler (port 8001)                │   │
-│  └──────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🛠️ Stack Tecnológica
+## 🛠️ Tecnologias
 
 ### Backend
-- **FastAPI** 0.104+ - Framework web moderno
-- **PostgreSQL** 15 - Banco de dados relacional
-- **Redis** 7+ - Cache e message broker
-- **Celery** - Processamento assíncrono
-- **Alembic** - Migrations
-- **SQLAlchemy** - ORM
-- **Pydantic** - Validação de dados
+- Node.js + Express
+- PostgreSQL + Prisma ORM
+- JWT para autenticação
+- Bcrypt para criptografia
+- PDFKit e ExcelJS para relatórios
 
 ### Frontend
-- **Streamlit** - Interface web interativa
-- **Plotly** - Gráficos interativos
-- **Pandas** - Manipulação de dados
+- React 18
+- Redux Toolkit
+- React Router v6
+- TailwindCSS
+- Recharts
+- Lucide Icons
 
-### DevOps
-- **Docker** + Docker Compose
-- **Kubernetes** (EKS para produção)
-- **GitHub Actions** - CI/CD
-- **Terraform** - Infrastructure as Code
-- **AWS** - Cloud hosting
-
-### Segurança
-- JWT + Refresh Tokens
-- Criptografia AES-256
-- TLS/HTTPS
-- OWASP best practices
-
----
-
-## 📊 Requisitos Não Funcionais
-
-| Métrica | Target MVP | Target Produção |
-|---------|------------|-----------------|
-| Response Time (p95) | < 200ms | < 50ms |
-| Uptime | 99.9% | 99.99% |
-| Test Coverage | >= 85% | >= 90% |
-| Concurrent Users | 100 | 2000+ |
-| Bugs Críticos | 0 | 0 |
-
----
-
-## 📁 Estrutura do Projeto
-
-```
-tudogestao-financeiro/
-├── backend/
-│   ├── app/
-│   │   ├── api/              # Endpoints FastAPI
-│   │   ├── core/             # Configurações core
-│   │   ├── models/           # SQLAlchemy models
-│   │   ├── schemas/          # Pydantic schemas
-│   │   ├── services/         # Lógica de negócio
-│   │   └── db/               # Database utilities
-│   ├── tests/                # Testes unitários/integração
-│   ├── alembic/              # Migrations
-│   └── requirements.txt
+tudogestao-plus/
 │
-├── frontend/
-│   ├── app.py                # Streamlit main
-│   ├── pages/                # Páginas do app
-│   ├── components/           # Componentes reutilizáveis
-│   └── requirements.txt
+├── 📁 backend/
+│   ├── 📄 .env.example                          # 👨‍💻 Michael Santos - Tech Lead
+│   ├── 📄 .gitignore                            # 👨‍💻 Michael Santos - Tech Lead
+│   ├── 📄 package.json                          # 👨‍💻 Michael Santos - Tech Lead
+│   ├── 📄 server.js                             # 👨‍💻 Michael Santos - Tech Lead
+│   │
+│   ├── 📁 prisma/
+│   │   ├── 📄 schema.prisma                     # 👨‍💻 Michael Santos - Tech Lead
+│   │   └── 📁 migrations/                       # Gerado automaticamente pelo Prisma
+│   │
+│   ├── 📁 config/
+│   │   └── 📄 database.js                       # 👨‍💻 Michael Santos - Tech Lead
+│   │
+│   ├── 📁 middleware/
+│   │   ├── 📄 auth.middleware.js                # ⚙️ Rubens Neto - Backend Developer
+│   │   ├── 📄 error.middleware.js               # ⚙️ Rubens Neto - Backend Developer
+│   │   ├── 📄 permission.middleware.js          # ⚙️ Rubens Neto - Backend Developer
+│   │   └── 📄 validation.middleware.js          # ⚙️ Rubens Neto - Backend Developer
+│   │
+│   ├── 📁 controllers/
+│   │   ├── 📄 auth.controller.js                # ⚙️ Rubens Neto - Backend Developer
+│   │   ├── 📄 customer.controller.js            # 🔧 Thaynara Ribeiro - Full Stack
+│   │   ├── 📄 product.controller.js             # 🔧 Thaynara Ribeiro - Full Stack
+│   │   ├── 📄 sale.controller.js                # ⚙️ Rubens Neto - Backend Developer
+│   │   ├── 📄 financial.controller.js           # ⚙️ Rubens Neto - Backend Developer
+│   │   ├── 📄 dashboard.controller.js           # 💼 Larissa Oliveira - Product Manager
+│   │   │                                         # ⚙️ Rubens Neto - Backend Developer
+│   │   ├── 📄 report.controller.js              # 💼 Larissa Oliveira - Product Manager
+│   │   │                                         # ⚙️ Rubens Neto - Backend Developer
+│   │   ├── 📄 supplier.controller.js            # 🔧 Thaynara Ribeiro - Full Stack
+│   │   ├── 📄 category.controller.js            # 🔧 Thaynara Ribeiro - Full Stack
+│   │   ├── 📄 employee.controller.js            # 🔧 Thaynara Ribeiro - Full Stack
+│   │   ├── 📄 nfe.controller.js                 # 🚀 Eliseu Junior - Full Stack
+│   │   ├── 📄 user.controller.js                # ⚙️ Rubens Neto - Backend Developer
+│   │   └── 📄 company.controller.js             # ⚙️ Rubens Neto - Backend Developer
+│   │
+│   ├── 📁 routes/
+│   │   ├── 📄 auth.routes.js                    # ⚙️ Rubens Neto - Backend Developer
+│   │   ├── 📄 customer.routes.js                # 🔧 Thaynara Ribeiro - Full Stack
+│   │   ├── 📄 supplier.routes.js                # 🔧 Thaynara Ribeiro - Full Stack
+│   │   ├── 📄 product.routes.js                 # 🔧 Thaynara Ribeiro - Full Stack
+│   │   ├── 📄 sale.routes.js                    # ⚙️ Rubens Neto - Backend Developer
+│   │   ├── 📄 financial.routes.js               # 💼 Larissa Oliveira - Product Manager
+│   │   │                                         # ⚙️ Rubens Neto - Backend Developer
+│   │   ├── 📄 dashboard.routes.js               # 💼 Larissa Oliveira - Product Manager
+│   │   ├── 📄 report.routes.js                  # 💼 Larissa Oliveira - Product Manager
+│   │   ├── 📄 category.routes.js                # 🔧 Thaynara Ribeiro - Full Stack
+│   │   ├── 📄 employee.routes.js                # 🔧 Thaynara Ribeiro - Full Stack
+│   │   ├── 📄 nfe.routes.js                     # 🚀 Eliseu Junior - Full Stack
+│   │   ├── 📄 user.routes.js                    # ⚙️ Rubens Neto - Backend Developer
+│   │   └── 📄 company.routes.js                 # ⚙️ Rubens Neto - Backend Developer
+│   │
+│   ├── 📁 services/
+│   │   ├── 📄 audit.service.js                  # ⚙️ Rubens Neto - Backend Developer
+│   │   ├── 📄 pdf.service.js                    # 💼 Larissa Oliveira - Product Manager
+│   │   │                                         # ⚙️ Rubens Neto - Backend Developer
+│   │   ├── 📄 excel.service.js                  # 💼 Larissa Oliveira - Product Manager
+│   │   ├── 📄 nfe.service.js                    # 🚀 Eliseu Junior - Full Stack
+│   │   └── 📁 security/
+│   │       ├── 📄 license.js                    # 👨‍💻 Michael Santos - Tech Lead
+│   │       └── 📄 encryption.js                 # 👨‍💻 Michael Santos - Tech Lead
+│   │
+│   ├── 📁 scripts/
+│   │   ├── 📄 setup-database.js                 # 👨‍💻 Michael Santos - Tech Lead
+│   │   ├── 📄 seed-demo-data.js                 # 👨‍💻 Michael Santos - Tech Lead
+│   │   │                                         # 💼 Larissa Oliveira - Product Manager
+│   │   └── 📄 backup-scheduler.js               # 👨‍💻 Michael Santos - Tech Lead
+│   │
+│   └── 📁 uploads/                               # Arquivos enviados (gerado em runtime)
 │
-├── sefaz-service/
-│   ├── app/                  # Microserviço NF-e
-│   ├── xml_templates/        # Templates XML
-│   └── requirements.txt
+├── 📁 frontend/
+│   ├── 📄 .env.example                          # 💻 Felipe Gonzaga - Frontend Developer
+│   ├── 📄 .gitignore                            # 💻 Felipe Gonzaga - Frontend Developer
+│   ├── 📄 package.json                          # 💻 Felipe Gonzaga - Frontend Developer
+│   ├── 📄 index.html                            # 💻 Felipe Gonzaga - Frontend Developer
+│   ├── 📄 vite.config.js                        # 💻 Felipe Gonzaga - Frontend Developer
+│   ├── 📄 tailwind.config.js                    # 🎨 Najla Cardeal - QA/Designer
+│   ├── 📄 postcss.config.js                     # 🎨 Najla Cardeal - QA/Designer
+│   │
+│   ├── 📁 public/
+│   │   ├── 📄 favicon.ico                       # 🎨 Najla Cardeal - QA/Designer
+│   │   └── 📁 images/                           # 🎨 Najla Cardeal - QA/Designer
+│   │
+│   └── 📁 src/
+│       ├── 📄 index.jsx                         # 💻 Felipe Gonzaga - Frontend Developer
+│       ├── 📄 App.jsx                           # 💻 Felipe Gonzaga - Frontend Developer
+│       │
+│       ├── 📁 styles/
+│       │   ├── 📄 globals.css                   # 🎨 Najla Cardeal - QA/Designer
+│       │   └── 📄 apple-theme.css               # 🎨 Najla Cardeal - QA/Designer
+│       │
+│       ├── 📁 store/
+│       │   ├── 📄 store.js                      # 💻 Felipe Gonzaga - Frontend Developer
+│       │   └── 📁 slices/
+│       │       ├── 📄 authSlice.js              # 💻 Felipe Gonzaga - Frontend Developer
+│       │       ├── 📄 customerSlice.js          # 💻 Felipe Gonzaga - Frontend Developer
+│       │       ├── 📄 productSlice.js           # 💻 Felipe Gonzaga - Frontend Developer
+│       │       ├── 📄 saleSlice.js              # 💻 Felipe Gonzaga - Frontend Developer
+│       │       ├── 📄 financialSlice.js         # 💻 Felipe Gonzaga - Frontend Developer
+│       │       └── 📄 dashboardSlice.js         # 💻 Felipe Gonzaga - Frontend Developer
+│       │                                         # 💼 Larissa Oliveira - Product Manager
+│       │
+│       ├── 📁 services/
+│       │   └── 📄 api.js                        # 💻 Felipe Gonzaga - Frontend Developer
+│       │
+│       ├── 📁 utils/
+│       │   ├── 📄 currency.js                   # 💻 Felipe Gonzaga - Frontend Developer
+│       │   ├── 📄 date.js                       # 💻 Felipe Gonzaga - Frontend Developer
+│       │   └── 📄 validators.js                 # 💻 Felipe Gonzaga - Frontend Developer
+│       │
+│       ├── 📁 hooks/
+│       │   ├── 📄 useAuth.js                    # 💻 Felipe Gonzaga - Frontend Developer
+│       │   ├── 📄 useToast.js                   # 💻 Felipe Gonzaga - Frontend Developer
+│       │   ├── 📄 useDebounce.js                # 💻 Felipe Gonzaga - Frontend Developer
+│       │   └── 📄 usePagination.js              # 💻 Felipe Gonzaga - Frontend Developer
+│       │
+│       ├── 📁 components/
+│       │   ├── 📁 UI/
+│       │   │   ├── 📁 Common/
+│       │   │   │   ├── 📄 Button.jsx            # 🎨 Najla Cardeal - QA/Designer
+│       │   │   │   │                             # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   │   ├── 📄 Card.jsx              # 🎨 Najla Cardeal - QA/Designer
+│       │   │   │   │                             # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   │   ├── 📄 Modal.jsx             # 🎨 Najla Cardeal - QA/Designer
+│       │   │   │   │                             # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   │   ├── 📄 Loading.jsx           # 🎨 Najla Cardeal - QA/Designer
+│       │   │   │   │                             # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   │   ├── 📄 Toast.jsx             # 🎨 Najla Cardeal - QA/Designer
+│       │   │   │   │                             # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   │   ├── 📄 Table.jsx             # 🎨 Najla Cardeal - QA/Designer
+│       │   │   │   │                             # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   │   ├── 📄 Input.jsx             # 🎨 Najla Cardeal - QA/Designer
+│       │   │   │   │                             # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   │   ├── 📄 Select.jsx            # 🎨 Najla Cardeal - QA/Designer
+│       │   │   │   │                             # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   │   ├── 📄 Badge.jsx             # 🎨 Najla Cardeal - QA/Designer
+│       │   │   │   │                             # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   │   ├── 📄 Pagination.jsx        # 🎨 Najla Cardeal - QA/Designer
+│       │   │   │   │                             # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   │   ├── 📄 SearchBar.jsx         # 🎨 Najla Cardeal - QA/Designer
+│       │   │   │   │                             # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   │   └── 📄 EmptyState.jsx        # 🎨 Najla Cardeal - QA/Designer
+│       │   │   │                                 # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   │
+│       │   │   └── 📁 Layout/
+│       │   │       ├── 📄 MainLayout.jsx        # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │       │                             # 🎨 Najla Cardeal - QA/Designer
+│       │   │       ├── 📄 Sidebar.jsx           # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │       │                             # 🎨 Najla Cardeal - QA/Designer
+│       │   │       ├── 📄 Header.jsx            # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │       │                             # 🎨 Najla Cardeal - QA/Designer
+│       │   │       └── 📄 AuthLayout.jsx        # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │                                     # 🎨 Najla Cardeal - QA/Designer
+│       │   │
+│       │   ├── 📁 Auth/
+│       │   │   └── 📄 PrivateRoute.jsx          # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │
+│       │   ├── 📁 Customers/
+│       │   │   ├── 📄 CustomerForm.jsx          # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   └── 📄 CustomerDetails.jsx       # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │
+│       │   ├── 📁 Suppliers/
+│       │   │   ├── 📄 SupplierForm.jsx          # 🔧 Thaynara Ribeiro - Full Stack
+│       │   │   └── 📄 SupplierDetails.jsx       # 🔧 Thaynara Ribeiro - Full Stack
+│       │   │
+│       │   ├── 📁 Products/
+│       │   │   ├── 📄 ProductForm.jsx           # 🔧 Thaynara Ribeiro - Full Stack
+│       │   │   ├── 📄 ProductDetails.jsx        # 🔧 Thaynara Ribeiro - Full Stack
+│       │   │   └── 📄 StockAdjustment.jsx       # 🔧 Thaynara Ribeiro - Full Stack
+│       │   │
+│       │   ├── 📁 Sales/
+│       │   │   ├── 📄 SaleForm.jsx              # ⚙️ Rubens Neto - Backend Developer
+│       │   │   │                                 # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   ├── 📄 SaleDetails.jsx           # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   └── 📄 PDV.jsx                   # 🚀 Eliseu Junior - Full Stack
+│       │   │
+│       │   ├── 📁 Financial/
+│       │   │   ├── 📄 PayableForm.jsx           # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   ├── 📄 ReceivableForm.jsx        # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   ├── 📄 TransactionForm.jsx       # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   └── 📄 CashFlowChart.jsx         # 💼 Larissa Oliveira - Product Manager
+│       │   │                                     # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │
+│       │   ├── 📁 Reports/
+│       │   │   ├── 📄 DREReport.jsx             # 💼 Larissa Oliveira - Product Manager
+│       │   │   │                                 # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   ├── 📄 SalesReport.jsx           # 💼 Larissa Oliveira - Product Manager
+│       │   │   │                                 # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   ├── 📄 StockReport.jsx           # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │   └── 📄 CustomerReport.jsx        # 💻 Felipe Gonzaga - Frontend Developer
+│       │   │
+│       │   └── 📁 NFe/
+│       │       ├── 📄 NFeList.jsx               # 🚀 Eliseu Junior - Full Stack
+│       │       └── 📄 NFeDetails.jsx            # 🚀 Eliseu Junior - Full Stack
+│       │
+│       └── 📁 pages/
+│           ├── 📁 Auth/
+│           │   ├── 📄 LoginPage.jsx             # 💻 Felipe Gonzaga - Frontend Developer
+│           │   │                                 # 🎨 Najla Cardeal - QA/Designer
+│           │   └── 📄 RegisterPage.jsx          # 💻 Felipe Gonzaga - Frontend Developer
+│           │                                     # 🎨 Najla Cardeal - QA/Designer
+│           │
+│           ├── 📁 Dashboard/
+│           │   └── 📄 DashboardPage.jsx         # 💻 Felipe Gonzaga - Frontend Developer
+│           │                                     # 💼 Larissa Oliveira - Product Manager
+│           │                                     # 🎨 Najla Cardeal - QA/Designer
+│           │
+│           ├── 📁 Customers/
+│           │   └── 📄 CustomersPage.jsx         # 💻 Felipe Gonzaga - Frontend Developer
+│           │                                     # 🔧 Thaynara Ribeiro - Full Stack
+│           │
+│           ├── 📁 Suppliers/
+│           │   └── 📄 SuppliersPage.jsx         # 🔧 Thaynara Ribeiro - Full Stack
+│           │
+│           ├── 📁 Products/
+│           │   └── 📄 ProductsPage.jsx          # 🔧 Thaynara Ribeiro - Full Stack
+│           │
+│           ├── 📁 Sales/
+│           │   └── 📄 SalesPage.jsx             # 💻 Felipe Gonzaga - Frontend Developer
+│           │                                     # ⚙️ Rubens Neto - Backend Developer
+│           │
+│           ├── 📁 Financial/
+│           │   └── 📄 FinancialPage.jsx         # 💻 Felipe Gonzaga - Frontend Developer
+│           │                                     # 💼 Larissa Oliveira - Product Manager
+│           │
+│           ├── 📁 Reports/
+│           │   └── 📄 ReportsPage.jsx           # 💼 Larissa Oliveira - Product Manager
+│           │                                     # 💻 Felipe Gonzaga - Frontend Developer
+│           │
+│           └── 📁 Settings/
+│               └── 📄 SettingsPage.jsx          # 💻 Felipe Gonzaga - Frontend Developer
 │
-├── database/
-│   ├── migrations/           # Alembic migrations
-│   └── seeds/                # Dados de teste
+├── 📁 docs/
+│   ├── 📄 ARCHITECTURE.md                       # 👨‍💻 Michael Santos - Tech Lead
+│   ├── 📄 API_DOCUMENTATION.md                  # ⚙️ Rubens Neto - Backend Developer
+│   ├── 📄 DATABASE_SCHEMA.md                    # 👨‍💻 Michael Santos - Tech Lead
+│   ├── 📄 DEPLOYMENT.md                         # 👨‍💻 Michael Santos - Tech Lead
+│   ├── 📄 USER_MANUAL.md                        # 💼 Larissa Oliveira - Product Manager
+│   └── 📄 DEVELOPMENT_GUIDE.md                  # 👨‍💻 Michael Santos - Tech Lead
 │
-├── infra/
-│   ├── docker/
-│   │   └── docker-compose.yml
-│   ├── k8s/                  # Kubernetes manifests
-│   └── terraform/            # IaC AWS
-│
-├── docs/
-│   ├── api/                  # OpenAPI specs
-│   ├── architecture/         # Diagramas C4
-│   └── guides/               # Guias de uso
-│
-└── .github/
-    └── workflows/            # CI/CD pipelines
-```
+├── 📄 README.md                                 # 👨‍💻 Michael Santos - Tech Lead
+├── 📄 LICENSE                                   # 👨‍💻 Michael Santos - Tech Lead
+└── 📄 .gitignore                                # 👨‍💻 Michael Santos - Tech Lead
 
----
+## ✨ Funcionalidades
 
-## 🚀 Instalação
+- 📊 Dashboard interativo com gráficos
+- 👥 Gestão de clientes e fornecedores
+- 📦 Controle de estoque e produtos
+- 💰 Sistema financeiro completo
+- 🛒 PDV (Ponto de Venda)
+- 📄 Emissão de Nota Fiscal Eletrônica (NFe)
+- 📈 Relatórios gerenciais
+- 👨‍💼 Gestão de funcionários e folha de pagamento
+- 🔒 Sistema de licenciamento e proteção
+- 📱 Design responsivo
+
+## 🚀 Como Executar
 
 ### Pré-requisitos
+- Node.js 18+
+- PostgreSQL 14+
+- npm ou yarn
 
-- Docker & Docker Compose
-- Python 3.11+
-- Git
+### Instalação
 
-### Setup Rápido
-
+1. Clone o repositório
 ```bash
-# 1. Clone o repositório
-git clone https://github.com/seu-usuario/tudogestao-financeiro.git
-cd tudogestao-financeiro
-
-# 2. Configure variáveis de ambiente
-cp .env.example .env
-# Edite o .env com suas configurações
-
-# 3. Inicie os containers
-docker-compose up -d
-
-# 4. Execute migrations
-docker-compose exec api alembic upgrade head
-
-# 5. Seed database (dados de teste)
-docker-compose exec api python -m app.db.seeds
-
-# 6. Acesse a aplicação
-# Frontend: http://localhost:8501
-# API: http://localhost:8000
-# Docs: http://localhost:8000/docs
+git clone https://github.com/seu-usuario/tudogestao.git
+cd tudogestao
 ```
 
-### Instalação Local (Desenvolvimento)
-
+2. Configure o Backend
 ```bash
-# Backend
 cd backend
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+npm install
+cp .env.example .env
+# Configure as variáveis de ambiente no .env
+npm run db:setup
+npm run db:seed
+```
 
-# Frontend (outro terminal)
+3. Configure o Frontend
+```bash
 cd frontend
-pip install -r requirements.txt
-streamlit run app.py
+npm install
+cp .env.example .env
 ```
 
----
-
-## 👥 Equipe & Responsabilidades
-
-| Nome | Cargo | GitHub | Email | Responsabilidade |
-|------|-------|--------|-------|------------------|
-| **Michael Santos** | Tech Lead | @michael-santos | michaelsantos@uni9.edu.br | Arquitetura, Code Review, DevOps |
-| **Larissa Oliveira** | Product Manager | @larissa-oliveira | l.fernanda.oliveira@uni9.edu.br | Product, UX, Business Logic |
-| **Felipe Gonzaga** | Frontend Developer | @felipe-gonzaga | fg593376@uni9.edu.br | Streamlit, UI/UX, Gráficos |
-| **Rubens Neto** | Backend Developer | @rubens-neto | rubenscbn@uni9.edu.br | FastAPI, Database, APIs |
-| **Najla Cardeal** | QA/Designer | @najla-cardeal | najla.vianac@uni9.edu.br | Testes, UI Design, QA |
-| **Thaynara Ribeiro** | Full Stack | @thaynara-ribeiro | thaynara.ribeiro@uni9.edu.br | Backend + Frontend |
-| **Eliseu Junior** | Full Stack | @eliseu-junior | eliseugama@uni9.edu.br | Backend + Frontend |
-
-### 📚 Áreas de Estudo por Membro
-
-#### Michael Santos (Tech Lead)
-- **Arquitetura:** Padrões de design, microserviços, escalabilidade
-- **DevOps:** Docker, Kubernetes, CI/CD, Terraform
-- **Segurança:** JWT, OWASP, criptografia
-- **Performance:** Otimização de queries, caching
-
-#### Larissa Oliveira (Product Manager)
-- **Business Logic:** Regras de negócio financeiro, fluxos
-- **UX/Product:** Wireframes, user stories, priorização
-- **APIs:** Entendimento de contratos de API
-- **Integrações:** Open Banking, SEFAZ
-
-#### Felipe Gonzaga (Frontend)
-- **Streamlit:** Components, layouts, state management
-- **Visualização:** Plotly, gráficos, dashboards
-- **UX:** Interface intuitiva, responsividade
-- **API Integration:** Consumo de APIs REST
-
-#### Rubens Neto (Backend)
-- **FastAPI:** Rotas, dependency injection, middlewares
-- **SQLAlchemy:** Models, queries, relationships
-- **PostgreSQL:** Queries avançadas, índices, performance
-- **Celery:** Tasks assíncronas, queues
-
-#### Najla Cardeal (QA/Designer)
-- **Testes:** Pytest, coverage, integration tests
-- **Design:** UI/UX patterns, Figma
-- **QA:** Test plans, bug tracking
-- **Acessibilidade:** WCAG, usabilidade
-
-#### Thaynara Ribeiro (Full Stack)
-- **Backend:** FastAPI + SQLAlchemy
-- **Frontend:** Streamlit + visualização
-- **Integração:** API consumo e criação
-- **Database:** Migrations e queries
-
-#### Eliseu Junior (Full Stack)
-- **Backend:** FastAPI + Celery
-- **Frontend:** Streamlit + components
-- **SEFAZ:** Microserviço NF-e
-- **Testes:** Unit e integration tests
-
----
-
-## 🔑 API Endpoints (Resumo)
-
-### Autenticação
-```
-POST   /api/v1/auth/login      # Login
-POST   /api/v1/auth/refresh    # Refresh token
-POST   /api/v1/auth/logout     # Logout
-```
-
-### Empresas
-```
-GET    /api/v1/companies       # Listar empresas
-POST   /api/v1/companies       # Criar empresa
-GET    /api/v1/companies/{id}  # Obter empresa
-PUT    /api/v1/companies/{id}  # Atualizar empresa
-```
-
-### Transações
-```
-GET    /api/v1/transactions    # Listar transações
-POST   /api/v1/transactions    # Criar transação
-GET    /api/v1/transactions/{id}  # Obter transação
-PUT    /api/v1/transactions/{id}  # Atualizar transação
-DELETE /api/v1/transactions/{id}  # Deletar transação
-```
-
-### NF-e
-```
-POST   /api/v1/invoices        # Emitir NF-e
-GET    /api/v1/invoices/{id}   # Status NF-e
-GET    /api/v1/invoices        # Listar NF-es
-```
-
-### Relatórios
-```
-GET    /api/v1/reports/dre         # DRE
-GET    /api/v1/reports/cashflow    # Fluxo de Caixa
-GET    /api/v1/reports/export      # Export PDF/Excel
-```
-
-**Documentação completa:** http://localhost:8000/docs
-
----
-
-## 🧪 Testes
-
+4. Inicie o sistema
 ```bash
-# Rodar todos os testes
-pytest
+# Terminal 1 - Backend
+cd backend
+npm run dev
 
-# Com coverage
-pytest --cov=app --cov-report=html
-
-# Testes específicos
-pytest tests/test_auth.py
-pytest tests/test_transactions.py
-
-# Load testing
-locust -f tests/load/locustfile.py
+# Terminal 2 - Frontend
+cd frontend
+npm run dev
 ```
-
-**Target:** Coverage >= 85%
-
----
-
-## 📦 Deploy
-
-### Docker Compose (Development)
-```bash
-docker-compose up -d
-```
-
-### Kubernetes (Production)
-```bash
-kubectl apply -f infra/k8s/
-```
-
-### CI/CD Pipeline
-- **Push to main:** → Build → Test → Deploy Staging
-- **Tag release:** → Build → Test → Deploy Production
-
----
-
-## 🔐 Segurança
-
-- ✅ JWT Authentication + Refresh Tokens
-- ✅ Password hashing (bcrypt)
-- ✅ SQL Injection protection (SQLAlchemy ORM)
-- ✅ XSS protection
-- ✅ CORS configured
-- ✅ Rate limiting
-- ✅ HTTPS/TLS
-- ✅ Secrets management (env vars)
-
----
-
-## 📈 Performance
-
-- **Caching:** Redis para queries frequentes
-- **Database:** Índices otimizados, query optimization
-- **Async:** Celery para tarefas pesadas (NF-e, relatórios)
-- **CDN:** Assets estáticos
-- **Load Balancer:** Nginx/ALB
-
----
 
 ## 📝 Licença
 
-MIT License - veja [LICENSE](LICENSE)
+Este projeto é proprietário e requer licença para uso comercial.
 
----
+## 📧 Contato
 
-## 🆘 Suporte
-
-- 📧 Email: suporte@tudogestao.com
-- 💬 Issues: [GitHub Issues](https://github.com/seu-usuario/tudogestao-financeiro/issues)
-- 📚 Docs: [docs/](docs/)
-
----
-
-## 🎓 Projeto Integrador
-
-Este projeto é parte do **Projeto Integrador - Gestão** e contempla:
-
-✅ Modelagem de Dados (DER/MER)  
-✅ Arquitetura C4  
-✅ Wireframes  
-✅ Frontend completo  
-✅ APIs REST  
-✅ Integrações  
-✅ Testes  
-✅ Deploy  
-
----
-
-<div align="center">
-
-**Desenvolvido com ❤️ pela equipe TudoGestão+**
-
-⭐ Deixe uma estrela se este projeto te ajudou!
-
-</div>
+Para dúvidas e suporte: suporte@tudogestao.com.br
