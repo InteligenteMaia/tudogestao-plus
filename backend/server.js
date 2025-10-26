@@ -13,6 +13,10 @@ const path = require('path');
 dotenv.config();
 
 const app = express();
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
 const PORT = process.env.PORT || 3001;
 
 // ========== MIDDLEWARES ==========

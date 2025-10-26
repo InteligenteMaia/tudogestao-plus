@@ -1,103 +1,441 @@
-# 🚀 Script de Setup - TudoGestão+ Backend
-# Execute com: .\setup.ps1
+# Script para corrigir o schema.prisma
+# Execute na pasta backend: .\fix-schema.ps1
 
-Write-Host "====================================" -ForegroundColor Cyan
-Write-Host "  🚀 TudoGestão+ Backend Setup" -ForegroundColor Cyan
-Write-Host "====================================" -ForegroundColor Cyan
+Write-Host "🔧 Corrigindo schema.prisma..." -ForegroundColor Yellow
 Write-Host ""
 
-# Verificar se está na pasta correta
-if (!(Test-Path "package.json")) {
-    Write-Host "❌ Erro: Execute este script dentro da pasta 'backend'" -ForegroundColor Red
-    Write-Host "   Use: cd backend" -ForegroundColor Yellow
+# Verificar se está na pasta backend
+if (!(Test-Path "prisma")) {
+    Write-Host "❌ Erro: Execute este script na pasta 'backend'" -ForegroundColor Red
     exit 1
 }
 
-# 1. Instalar dependências
-Write-Host "📦 [1/6] Instalando dependências..." -ForegroundColor Yellow
-npm install
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "❌ Erro ao instalar dependências!" -ForegroundColor Red
-    exit 1
+# Fazer backup do schema atual
+$backupPath = "prisma\schema.prisma.backup"
+if (Test-Path "prisma\schema.prisma") {
+    Write-Host "📦 Fazendo backup do schema atual..." -ForegroundColor Cyan
+    Copy-Item "prisma\schema.prisma" $backupPath -Force
+    Write-Host "✅ Backup salvo em: $backupPath" -ForegroundColor Green
+    Write-Host ""
 }
-Write-Host "✅ Dependências instaladas!" -ForegroundColor Green
+
+# Criar o novo schema corrigido
+Write-Host "📝 Criando schema.prisma corrigido..." -ForegroundColor Cyan
+
+$schemaContent = @'
+// 👨‍💻 Michael Santos - Tech Lead & Arquitetura
+// Schema do banco de dados - TudoGestão+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========== EMPRESAS ==========
+model Company {
+  id          String   @id @default(uuid())
+  name        String
+  tradeName   String?
+  cnpj        String   @unique
+  ie          String?
+  im          String?
+  email       String
+  phone       String
+  address     Json
+  active      Boolean  @default(true)
+  licenseKey  String?
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  customers   Customer[]
+  suppliers   Supplier[]
+  products    Product[]
+  sales       Sale[]
+  employees   Employee[]
+
+  @@map("companies")
+}
+
+// ========== USUÁRIOS ==========
+model User {
+  id          String   @id @default(uuid())
+  companyId   String
+  name        String
+  email       String   @unique
+  password    String
+  role        UserRole @default(USER)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company     Company  @relation(fields: [companyId], references: [id])
+  auditLogs   AuditLog[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  SALESPERSON
+  FINANCIAL
+  USER
+}
+
+// ========== CLIENTES ==========
+model Customer {
+  id          String       @id @default(uuid())
+  companyId   String
+  type        CustomerType @default(INDIVIDUAL)
+  cpfCnpj     String
+  name        String
+  tradeName   String?
+  email       String?
+  phone       String?
+  address     Json?
+  active      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  company     Company      @relation(fields: [companyId], references: [id])
+  sales       Sale[]
+
+  @@unique([companyId, cpfCnpj])
+  @@map("customers")
+}
+
+enum CustomerType {
+  INDIVIDUAL
+  COMPANY
+}
+
+// ========== FORNECEDORES ==========
+model Supplier {
+  id          String   @id @default(uuid())
+  companyId   String
+  cpfCnpj     String
+  name        String
+  tradeName   String?
+  email       String?
+  phone       String?
+  address     Json?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company     Company  @relation(fields: [companyId], references: [id])
+  products    Product[]
+
+  @@unique([companyId, cpfCnpj])
+  @@map("suppliers")
+}
+
+// ========== CATEGORIAS ==========
+model Category {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products    Product[]
+
+  @@map("categories")
+}
+
+// ========== PRODUTOS ==========
+model Product {
+  id           String   @id @default(uuid())
+  companyId    String
+  supplierId   String?
+  categoryId   String?
+  code         String
+  barcode      String?
+  name         String
+  description  String?
+  unit         String   @default("UN")
+  costPrice    Decimal  @db.Decimal(10, 2)
+  salePrice    Decimal  @db.Decimal(10, 2)
+  stock        Int      @default(0)
+  minStock     Int      @default(0)
+  maxStock     Int?
+  ncm          String?
+  cest         String?
+  cfop         String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  company      Company     @relation(fields: [companyId], references: [id])
+  supplier     Supplier?   @relation(fields: [supplierId], references: [id])
+  category     Category?   @relation(fields: [categoryId], references: [id])
+  saleItems    SaleItem[]
+  stockMovements StockMovement[]
+
+  @@unique([companyId, code])
+  @@map("products")
+}
+
+// ========== MOVIMENTAÇÕES DE ESTOQUE ==========
+model StockMovement {
+  id          String            @id @default(uuid())
+  productId   String
+  type        StockMovementType
+  quantity    Int
+  reason      String?
+  userId      String?
+  createdAt   DateTime          @default(now())
+
+  product     Product           @relation(fields: [productId], references: [id])
+
+  @@map("stock_movements")
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  ADJUSTMENT
+  RETURN
+}
+
+// ========== VENDAS ==========
+model Sale {
+  id           String       @id @default(uuid())
+  companyId    String
+  customerId   String
+  saleNumber   String
+  date         DateTime     @default(now())
+  totalAmount  Decimal      @db.Decimal(10, 2)
+  discount     Decimal?     @db.Decimal(10, 2)
+  netAmount    Decimal      @db.Decimal(10, 2)
+  status       SaleStatus   @default(PENDING)
+  paymentMethod PaymentMethod?
+  observations String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  company      Company      @relation(fields: [companyId], references: [id])
+  customer     Customer     @relation(fields: [customerId], references: [id])
+  items        SaleItem[]
+  nfe          NFe?
+
+  @@unique([companyId, saleNumber])
+  @@map("sales")
+}
+
+enum SaleStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  DEBIT_CARD
+  PIX
+  BANK_SLIP
+  CHECK
+  OTHER
+}
+
+// ========== ITENS DE VENDA ==========
+model SaleItem {
+  id          String   @id @default(uuid())
+  saleId      String
+  productId   String
+  quantity    Int
+  unitPrice   Decimal  @db.Decimal(10, 2)
+  discount    Decimal? @db.Decimal(10, 2)
+  total       Decimal  @db.Decimal(10, 2)
+
+  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id])
+
+  @@map("sale_items")
+}
+
+// ========== NOTAS FISCAIS ELETRÔNICAS ==========
+model NFe {
+  id           String    @id @default(uuid())
+  saleId       String    @unique
+  number       String
+  series       String
+  accessKey    String?
+  status       NFeStatus @default(PENDING)
+  xml          String?
+  protocol     String?
+  issuedAt     DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  sale         Sale      @relation(fields: [saleId], references: [id])
+
+  @@map("nfes")
+}
+
+enum NFeStatus {
+  PENDING
+  AUTHORIZED
+  CANCELLED
+  DENIED
+  ERROR
+}
+
+// ========== CONTAS A RECEBER ==========
+model AccountReceivable {
+  id           String          @id @default(uuid())
+  customerId   String?
+  saleId       String?
+  description  String
+  amount       Decimal         @db.Decimal(10, 2)
+  dueDate      DateTime
+  paymentDate  DateTime?
+  status       AccountStatus   @default(PENDING)
+  observations String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@map("accounts_receivable")
+}
+
+// ========== CONTAS A PAGAR ==========
+model AccountPayable {
+  id           String        @id @default(uuid())
+  supplierId   String?
+  description  String
+  amount       Decimal       @db.Decimal(10, 2)
+  dueDate      DateTime
+  paymentDate  DateTime?
+  status       AccountStatus @default(PENDING)
+  observations String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("accounts_payable")
+}
+
+enum AccountStatus {
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+// ========== TRANSAÇÕES FINANCEIRAS ==========
+model FinancialTransaction {
+  id           String            @id @default(uuid())
+  type         TransactionType
+  category     String
+  description  String
+  amount       Decimal           @db.Decimal(10, 2)
+  date         DateTime          @default(now())
+  bankAccount  String?
+  observations String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@map("financial_transactions")
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+// ========== FUNCIONÁRIOS ==========
+model Employee {
+  id           String   @id @default(uuid())
+  companyId    String
+  cpf          String   @unique
+  name         String
+  email        String?
+  phone        String?
+  position     String
+  department   String?
+  salary       Decimal  @db.Decimal(10, 2)
+  admissionDate DateTime
+  dismissalDate DateTime?
+  active       Boolean  @default(true)
+  address      Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  company      Company  @relation(fields: [companyId], references: [id])
+  payrolls     Payroll[]
+
+  @@map("employees")
+}
+
+// ========== FOLHA DE PAGAMENTO ==========
+model Payroll {
+  id            String   @id @default(uuid())
+  employeeId    String
+  referenceMonth DateTime
+  grossSalary   Decimal  @db.Decimal(10, 2)
+  inss          Decimal  @db.Decimal(10, 2)
+  irrf          Decimal  @db.Decimal(10, 2)
+  fgts          Decimal  @db.Decimal(10, 2)
+  benefits      Decimal? @db.Decimal(10, 2)
+  deductions    Decimal? @db.Decimal(10, 2)
+  netSalary     Decimal  @db.Decimal(10, 2)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  employee      Employee @relation(fields: [employeeId], references: [id])
+
+  @@map("payrolls")
+}
+
+// ========== AUDITORIA ==========
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String
+  action      String
+  entity      String
+  entityId    String?
+  changes     Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+'@
+
+# Escrever o novo schema
+Set-Content -Path "prisma\schema.prisma" -Value $schemaContent -Encoding UTF8
+
+Write-Host "✅ Schema corrigido criado!" -ForegroundColor Green
 Write-Host ""
 
-# 2. Gerar Prisma Client
-Write-Host "🔧 [2/6] Gerando Prisma Client..." -ForegroundColor Yellow
+# Gerar Prisma Client
+Write-Host "🔧 Gerando Prisma Client..." -ForegroundColor Cyan
 npx prisma generate
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "❌ Erro ao gerar Prisma Client!" -ForegroundColor Red
-    exit 1
-}
-Write-Host "✅ Prisma Client gerado!" -ForegroundColor Green
-Write-Host ""
 
-# 3. Verificar/Criar arquivo .env
-Write-Host "⚙️  [3/6] Verificando arquivo .env..." -ForegroundColor Yellow
-if (!(Test-Path ".env")) {
-    if (Test-Path ".env.example") {
-        Copy-Item ".env.example" ".env"
-        Write-Host "✅ Arquivo .env criado a partir do .env.example" -ForegroundColor Green
-        Write-Host "⚠️  IMPORTANTE: Configure o DATABASE_URL no arquivo .env" -ForegroundColor Yellow
-    } else {
-        Write-Host "❌ Arquivo .env.example não encontrado!" -ForegroundColor Red
-        Write-Host "   Crie um arquivo .env manualmente com as configurações do banco" -ForegroundColor Yellow
-        exit 1
-    }
+if ($LASTEXITCODE -eq 0) {
+    Write-Host ""
+    Write-Host "========================================" -ForegroundColor Green
+    Write-Host "  ✅ Schema corrigido com sucesso!" -ForegroundColor Green
+    Write-Host "========================================" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "Próximos passos:" -ForegroundColor Cyan
+    Write-Host "1. npx prisma migrate dev --name init" -ForegroundColor Yellow
+    Write-Host "2. npm run db:seed" -ForegroundColor Yellow
+    Write-Host "3. npm run dev" -ForegroundColor Yellow
+    Write-Host ""
 } else {
-    Write-Host "✅ Arquivo .env já existe!" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "❌ Erro ao gerar Prisma Client" -ForegroundColor Red
+    Write-Host "Verifique os erros acima" -ForegroundColor Yellow
 }
-Write-Host ""
-
-# 4. Verificar conexão com banco
-Write-Host "🗄️  [4/6] Verificando conexão com PostgreSQL..." -ForegroundColor Yellow
-npx prisma db push --skip-generate
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "❌ Erro ao conectar ao banco de dados!" -ForegroundColor Red
-    Write-Host "   Verifique se:" -ForegroundColor Yellow
-    Write-Host "   • PostgreSQL está instalado e rodando" -ForegroundColor Yellow
-    Write-Host "   • O DATABASE_URL no .env está correto" -ForegroundColor Yellow
-    Write-Host "   • O banco de dados 'tudogestao' foi criado" -ForegroundColor Yellow
-    exit 1
-}
-Write-Host "✅ Conexão com banco estabelecida!" -ForegroundColor Green
-Write-Host ""
-
-# 5. Executar migrations
-Write-Host "📊 [5/6] Executando migrations do banco..." -ForegroundColor Yellow
-npx prisma migrate dev --name init
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "⚠️  Tentando reset do banco..." -ForegroundColor Yellow
-    npx prisma migrate reset --force
-}
-Write-Host "✅ Migrations executadas!" -ForegroundColor Green
-Write-Host ""
-
-# 6. Popular dados de demonstração
-Write-Host "🌱 [6/6] Populando dados de demonstração..." -ForegroundColor Yellow
-$seedExists = Test-Path "scripts/seed-demo-data.js"
-if ($seedExists) {
-    npm run db:seed
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "✅ Dados de demonstração criados!" -ForegroundColor Green
-    } else {
-        Write-Host "⚠️  Erro ao criar dados de demonstração (não crítico)" -ForegroundColor Yellow
-    }
-} else {
-    Write-Host "⚠️  Script de seed não encontrado (pulando)" -ForegroundColor Yellow
-}
-Write-Host ""
-
-# Sucesso!
-Write-Host "====================================" -ForegroundColor Green
-Write-Host "  ✅ Setup concluído com sucesso!" -ForegroundColor Green
-Write-Host "====================================" -ForegroundColor Green
-Write-Host ""
-Write-Host "🚀 Para iniciar o servidor, execute:" -ForegroundColor Cyan
-Write-Host "   npm run dev" -ForegroundColor Yellow
-Write-Host ""
-Write-Host "📧 Login de demonstração:" -ForegroundColor Cyan
-Write-Host "   Email: admin@demostore.com" -ForegroundColor White
-Write-Host "   Senha: admin123" -ForegroundColor White
-Write-Host ""
