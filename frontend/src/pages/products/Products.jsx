@@ -15,10 +15,12 @@ export default function Products() {
   const loadProducts = async () => {
     try {
       const response = await api.get('/products');
-      setProducts(response.data);
+      setProducts(response.data.products || []);
       setLoading(false);
     } catch (error) {
+      console.error('Erro ao carregar produtos:', error);
       toast.error('Erro ao carregar produtos');
+      setProducts([]);
       setLoading(false);
     }
   };
