@@ -15,22 +15,24 @@ export default function Suppliers() {
   const loadSuppliers = async () => {
     try {
       const response = await api.get('/suppliers');
-      setSuppliers(response.data);
+      setSuppliers(response.data.suppliers || []);
       setLoading(false);
     } catch (error) {
+      console.error('Erro ao carregar fornecedores:', error);
       toast.error('Erro ao carregar fornecedores');
+      setSuppliers([]);
       setLoading(false);
     }
   };
 
   const filteredSuppliers = suppliers.filter(s =>
     s.name?.toLowerCase().includes(search.toLowerCase()) ||
-    s.cpfCnpj?.includes(search)
+    s.cpfCnpj?.includes(search) ||
+    s.email?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div>
-      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
         <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#333', margin: 0 }}>
           Fornecedores
@@ -52,7 +54,6 @@ export default function Suppliers() {
         </button>
       </div>
 
-      {/* Search Bar */}
       <div style={{
         background: 'white',
         borderRadius: '12px',
@@ -70,7 +71,7 @@ export default function Suppliers() {
           }} />
           <input
             type="text"
-            placeholder="Buscar fornecedores..."
+            placeholder="Buscar por nome, CNPJ ou email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
@@ -85,7 +86,6 @@ export default function Suppliers() {
         </div>
       </div>
 
-      {/* Table */}
       <div style={{
         background: 'white',
         borderRadius: '12px',
@@ -105,6 +105,7 @@ export default function Suppliers() {
             <thead>
               <tr style={{ background: '#f9fafb', borderBottom: '2px solid #e5e5e5' }}>
                 <th style={{ padding: '15px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#666' }}>Nome</th>
+                <th style={{ padding: '15px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#666' }}>Nome Fantasia</th>
                 <th style={{ padding: '15px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#666' }}>CNPJ</th>
                 <th style={{ padding: '15px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#666' }}>Email</th>
                 <th style={{ padding: '15px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#666' }}>Telefone</th>
@@ -117,9 +118,9 @@ export default function Suppliers() {
                 <tr key={supplier.id} style={{ borderBottom: '1px solid #e5e5e5' }}>
                   <td style={{ padding: '15px', fontSize: '14px', color: '#333', fontWeight: '500' }}>
                     {supplier.name}
-                    {supplier.tradeName && (
-                      <div style={{ fontSize: '12px', color: '#666' }}>{supplier.tradeName}</div>
-                    )}
+                  </td>
+                  <td style={{ padding: '15px', fontSize: '14px', color: '#666' }}>
+                    {supplier.tradeName || '-'}
                   </td>
                   <td style={{ padding: '15px', fontSize: '14px', color: '#666' }}>
                     {supplier.cpfCnpj}

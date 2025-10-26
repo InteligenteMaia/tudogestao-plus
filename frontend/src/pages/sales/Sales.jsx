@@ -14,10 +14,12 @@ export default function Sales() {
   const loadSales = async () => {
     try {
       const response = await api.get('/sales');
-      setSales(response.data);
+      setSales(response.data.sales || []);
       setLoading(false);
     } catch (error) {
+      console.error('Erro ao carregar vendas:', error);
       toast.error('Erro ao carregar vendas');
+      setSales([]);
       setLoading(false);
     }
   };
@@ -39,6 +41,10 @@ export default function Sales() {
     };
     return texts[status] || status;
   };
+
+  const totalSales = sales.reduce((sum, s) => sum + parseFloat(s.netAmount || 0), 0);
+  const paidSales = sales.filter(s => s.status === 'PAID').length;
+  const pendingSales = sales.filter(s => s.status === 'PENDING').length;
 
   return (
     <div>
@@ -79,7 +85,7 @@ export default function Sales() {
         }}>
           <p style={{ margin: 0, color: '#666', fontSize: '14px', marginBottom: '8px' }}>Total de Vendas</p>
           <h3 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#667eea' }}>
-            R$ {sales.reduce((sum, s) => sum + parseFloat(s.netAmount || 0), 0).toFixed(2)}
+            R$ {totalSales.toFixed(2)}
           </h3>
         </div>
         
@@ -91,7 +97,7 @@ export default function Sales() {
         }}>
           <p style={{ margin: 0, color: '#666', fontSize: '14px', marginBottom: '8px' }}>Vendas Pagas</p>
           <h3 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#10b981' }}>
-            {sales.filter(s => s.status === 'PAID').length}
+            {paidSales}
           </h3>
         </div>
 
@@ -103,7 +109,7 @@ export default function Sales() {
         }}>
           <p style={{ margin: 0, color: '#666', fontSize: '14px', marginBottom: '8px' }}>Vendas Pendentes</p>
           <h3 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#f59e0b' }}>
-            {sales.filter(s => s.status === 'PENDING').length}
+            {pendingSales}
           </h3>
         </div>
       </div>

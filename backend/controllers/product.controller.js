@@ -2,271 +2,284 @@
 // 🔧 Thaynara Ribeiro - Full Stack
 // Controller de produtos
 
-const { PrismaClient } = require('@prisma/client');
-const { AppError } = require('../middleware/error.middleware');
-const auditService = require('../services/audit.service');
 
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 class ProductController {
-  /**
-   * Lista todos os produtos
-   */
+  async create(req, res) {
+    try {
+      const { code, name, description, categoryId, supplierId, costPrice, salePrice, stock, minStock, barcode, unit } = req.body;
+      const { companyId } = req.user;
+
+      const product = await prisma.product.create({
+        data: {
+          companyId,
+          code,
+          name,
+          description,
+          categoryId,
+          supplierId,
+          costPrice: parseFloat(costPrice),
+          salePrice: parseFloat(salePrice),
+          stock: parseInt(stock) || 0,
+          minStock: parseInt(minStock) || 0,
+          barcode,
+          unit: unit || 'UN'
+        },
+        include: {
+          category: true,
+          supplier: true
+        }
+      });
+
+      res.status(201).json(product);
+    } catch (error) {
+      console.error('Erro:', error);
+      res.status(500).json({ error: 'Erro ao criar produto' });
+    }
+  }
+
   async list(req, res) {
-    const { page = 1, limit = 50, search, categoryId, active, lowStock } = req.query;
-    const skip = (page - 1) * limit;
+    try {
+      const { companyId } = req.user;
+      const { page = 1, limit = 50, search, categoryId } = req.query;
 
-    const where = {
-      companyId: req.companyId,
-      ...(search && {
-        OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { sku: { contains: search } },
-          { barcode: { contains: search } },
-        ]
-      }),
-      ...(categoryId && { categoryId }),
-      ...(active !== undefined && { active: active === 'true' }),
-      ...(lowStock === 'true' && {
-        stock: { lte: prisma.raw('min_stock') }
-      })
-    };
+      const where = {
+        companyId,
+        ...(search && {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { code: { contains: search, mode: 'insensitive' } }
+          ]
+        }),
+        ...(categoryId && { categoryId })
+      };
 
-    const [products, total] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        skip,
-        take: parseInt(limit),
-        orderBy: { name: 'asc' },
+      const [products, total] = await Promise.all([
+        prisma.product.findMany({
+          where,
+          skip: (page - 1) * limit,
+          take: parseInt(limit),
+          orderBy: { name: 'asc' },
+          include: {
+            category: {
+              select: {
+                id: true,
+                name: true
+              }
+            },
+            supplier: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }),
+        prisma.product.count({ where })
+      ]);
+
+      res.json({
+        products,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      });
+    } catch (error) {
+      console.error('Erro:', error);
+      res.status(500).json({ error: 'Erro ao listar produtos' });
+    }
+  }
+
+  async getById(req, res) {
+    try {
+      const { id } = req.params;
+      const { companyId } = req.user;
+
+      const product = await prisma.product.findFirst({
+        where: { id, companyId },
+        include: {
+          category: true,
+          supplier: true
+        }
+      });
+
+      if (!product) {
+        return res.status(404).json({ error: 'Produto não encontrado' });
+      }
+
+      res.json(product);
+    } catch (error) {
+      console.error('Erro:', error);
+      res.status(500).json({ error: 'Erro ao buscar produto' });
+    }
+  }
+
+  async update(req, res) {
+    try {
+      const { id } = req.params;
+      const { companyId } = req.user;
+      const updateData = req.body;
+
+      const product = await prisma.product.findFirst({
+        where: { id, companyId }
+      });
+
+      if (!product) {
+        return res.status(404).json({ error: 'Produto não encontrado' });
+      }
+
+      const updated = await prisma.product.update({
+        where: { id },
+        data: {
+          ...updateData,
+          ...(updateData.costPrice && { costPrice: parseFloat(updateData.costPrice) }),
+          ...(updateData.salePrice && { salePrice: parseFloat(updateData.salePrice) }),
+          ...(updateData.stock !== undefined && { stock: parseInt(updateData.stock) }),
+          ...(updateData.minStock !== undefined && { minStock: parseInt(updateData.minStock) })
+        },
+        include: {
+          category: true,
+          supplier: true
+        }
+      });
+
+      res.json(updated);
+    } catch (error) {
+      console.error('Erro:', error);
+      res.status(500).json({ error: 'Erro ao atualizar produto' });
+    }
+  }
+
+  async delete(req, res) {
+    try {
+      const { id } = req.params;
+      const { companyId } = req.user;
+
+      const product = await prisma.product.findFirst({
+        where: { id, companyId }
+      });
+
+      if (!product) {
+        return res.status(404).json({ error: 'Produto não encontrado' });
+      }
+
+      await prisma.product.delete({ where: { id } });
+
+      res.json({ message: 'Produto excluído com sucesso' });
+    } catch (error) {
+      console.error('Erro:', error);
+      res.status(500).json({ error: 'Erro ao excluir produto' });
+    }
+  }
+
+  async updateStock(req, res) {
+    try {
+      const { id } = req.params;
+      const { quantity, type } = req.body;
+      const { companyId } = req.user;
+
+      const product = await prisma.product.findFirst({
+        where: { id, companyId }
+      });
+
+      if (!product) {
+        return res.status(404).json({ error: 'Produto não encontrado' });
+      }
+
+      const updated = await prisma.product.update({
+        where: { id },
+        data: {
+          stock: type === 'add' 
+            ? { increment: parseInt(quantity) }
+            : { decrement: parseInt(quantity) }
+        }
+      });
+
+      res.json(updated);
+    } catch (error) {
+      console.error('Erro:', error);
+      res.status(500).json({ error: 'Erro ao atualizar estoque' });
+    }
+  }
+
+  async adjustStock(req, res) {
+    try {
+      const { id } = req.params;
+      const { adjustment, reason } = req.body;
+      const { companyId } = req.user;
+
+      const product = await prisma.product.findFirst({
+        where: { id, companyId }
+      });
+
+      if (!product) {
+        return res.status(404).json({ error: 'Produto não encontrado' });
+      }
+
+      const newStock = product.stock + parseInt(adjustment);
+
+      if (newStock < 0) {
+        return res.status(400).json({ error: 'Estoque não pode ficar negativo' });
+      }
+
+      const updated = await prisma.product.update({
+        where: { id },
+        data: {
+          stock: newStock
+        },
+        include: {
+          category: true,
+          supplier: true
+        }
+      });
+
+      res.json(updated);
+    } catch (error) {
+      console.error('Erro:', error);
+      res.status(500).json({ error: 'Erro ao ajustar estoque' });
+    }
+  }
+
+  async lowStock(req, res) {
+    try {
+      const { companyId } = req.user;
+
+      const products = await prisma.product.findMany({
+        where: {
+          companyId,
+          stock: {
+            lte: prisma.product.fields.minStock
+          }
+        },
         include: {
           category: {
-            select: { id: true, name: true, color: true }
+            select: {
+              id: true,
+              name: true
+            }
           },
           supplier: {
-            select: { id: true, name: true }
+            select: {
+              id: true,
+              name: true
+            }
           }
+        },
+        orderBy: {
+          stock: 'asc'
         }
-      }),
-      prisma.product.count({ where })
-    ]);
+      });
 
-    res.json({
-      products,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / limit)
-      }
-    });
-  }
-
-  /**
-   * Busca produto por ID
-   */
-  async getById(req, res) {
-    const { id } = req.params;
-
-    const product = await prisma.product.findFirst({
-      where: { 
-        id,
-        companyId: req.companyId 
-      },
-      include: {
-        category: true,
-        supplier: true,
-        stockMovements: {
-          orderBy: { date: 'desc' },
-          take: 10
-        }
-      }
-    });
-
-    if (!product) {
-      throw new AppError('Produto não encontrado', 404);
+      res.json(products);
+    } catch (error) {
+      console.error('Erro:', error);
+      res.status(500).json({ error: 'Erro ao buscar produtos com estoque baixo' });
     }
-
-    res.json(product);
-  }
-
-  /**
-   * Cria novo produto
-   */
-  async create(req, res) {
-    const data = {
-      ...req.body,
-      companyId: req.companyId,
-    };
-
-    // Verifica se SKU já existe
-    const existing = await prisma.product.findFirst({
-      where: {
-        companyId: req.companyId,
-        sku: data.sku
-      }
-    });
-
-    if (existing) {
-      throw new AppError('SKU já cadastrado', 409);
-    }
-
-    const product = await prisma.product.create({
-      data,
-      include: {
-        category: true,
-        supplier: true
-      }
-    });
-
-    // Log de auditoria
-    await auditService.log(req.userId, 'CREATE', 'Product', product.id, data);
-
-    res.status(201).json({
-      message: 'Produto criado com sucesso',
-      product
-    });
-  }
-
-  /**
-   * Atualiza produto
-   */
-  async update(req, res) {
-    const { id } = req.params;
-    const data = req.body;
-
-    // Verifica se existe
-    const existing = await prisma.product.findFirst({
-      where: { id, companyId: req.companyId }
-    });
-
-    if (!existing) {
-      throw new AppError('Produto não encontrado', 404);
-    }
-
-    const product = await prisma.product.update({
-      where: { id },
-      data,
-      include: {
-        category: true,
-        supplier: true
-      }
-    });
-
-    // Log de auditoria
-    await auditService.log(req.userId, 'UPDATE', 'Product', id, data);
-
-    res.json({
-      message: 'Produto atualizado com sucesso',
-      product
-    });
-  }
-
-  /**
-   * Deleta produto
-   */
-  async delete(req, res) {
-    const { id } = req.params;
-
-    // Verifica se tem vendas
-    const sales = await prisma.saleItem.count({
-      where: { productId: id }
-    });
-
-    if (sales > 0) {
-      throw new AppError(
-        'Não é possível excluir produto com vendas registradas',
-        400
-      );
-    }
-
-    await prisma.product.delete({
-      where: { id }
-    });
-
-    // Log de auditoria
-    await auditService.log(req.userId, 'DELETE', 'Product', id);
-
-    res.json({ message: 'Produto excluído com sucesso' });
-  }
-
-  /**
-   * Ajusta estoque
-   */
-  async adjustStock(req, res) {
-    const { id } = req.params;
-    const { quantity, type, reason } = req.body;
-
-    const product = await prisma.product.findFirst({
-      where: { id, companyId: req.companyId }
-    });
-
-    if (!product) {
-      throw new AppError('Produto não encontrado', 404);
-    }
-
-    // Calcula novo estoque
-    let newStock = product.stock;
-    if (type === 'ENTRY' || type === 'ADJUSTMENT') {
-      newStock += quantity;
-    } else if (type === 'EXIT') {
-      newStock -= quantity;
-      if (newStock < 0) {
-        throw new AppError('Estoque insuficiente', 400);
-      }
-    }
-
-    // Atualiza em transação
-    const result = await prisma.$transaction([
-      prisma.product.update({
-        where: { id },
-        data: { stock: newStock }
-      }),
-      prisma.stockMovement.create({
-        data: {
-          productId: id,
-          type,
-          quantity,
-          reason,
-        }
-      })
-    ]);
-
-    // Log de auditoria
-    await auditService.log(req.userId, 'STOCK_ADJUST', 'Product', id, {
-      type,
-      quantity,
-      oldStock: product.stock,
-      newStock
-    });
-
-    res.json({
-      message: 'Estoque ajustado com sucesso',
-      product: result[0],
-      movement: result[1]
-    });
-  }
-
-  /**
-   * Produtos com estoque baixo
-   */
-  async lowStock(req, res) {
-    const products = await prisma.product.findMany({
-      where: {
-        companyId: req.companyId,
-        active: true,
-        stock: {
-          lte: prisma.raw('min_stock')
-        }
-      },
-      include: {
-        category: {
-          select: { name: true, color: true }
-        }
-      },
-      orderBy: { stock: 'asc' }
-    });
-
-    res.json({ products });
   }
 }
 

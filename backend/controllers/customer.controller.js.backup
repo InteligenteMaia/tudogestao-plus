@@ -47,7 +47,8 @@ class CustomerController {
           _count: {
             select: {
               sales: true,
-              }
+              receivables: true,
+            }
           }
         }
       }),

@@ -15,22 +15,27 @@ export default function Customers() {
   const loadCustomers = async () => {
     try {
       const response = await api.get('/customers');
-      setCustomers(response.data);
+      setCustomers(response.data.customers || []);
       setLoading(false);
     } catch (error) {
+      console.error('Erro ao carregar clientes:', error);
       toast.error('Erro ao carregar clientes');
+      setCustomers([]);
       setLoading(false);
     }
   };
 
   const filteredCustomers = customers.filter(c =>
     c.name?.toLowerCase().includes(search.toLowerCase()) ||
-    c.cpfCnpj?.includes(search)
+    c.cpfCnpj?.includes(search) ||
+    c.email?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const pfCustomers = customers.filter(c => c.type === 'PF').length;
+  const pjCustomers = customers.filter(c => c.type === 'PJ').length;
 
   return (
     <div>
-      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
         <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#333', margin: 0 }}>
           Clientes
@@ -52,7 +57,49 @@ export default function Customers() {
         </button>
       </div>
 
-      {/* Search Bar */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '20px',
+        marginBottom: '30px'
+      }}>
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          padding: '20px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+        }}>
+          <p style={{ margin: 0, color: '#666', fontSize: '14px', marginBottom: '8px' }}>Total de Clientes</p>
+          <h3 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#667eea' }}>
+            {customers.length}
+          </h3>
+        </div>
+
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          padding: '20px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+        }}>
+          <p style={{ margin: 0, color: '#666', fontSize: '14px', marginBottom: '8px' }}>Pessoa Física</p>
+          <h3 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#10b981' }}>
+            {pfCustomers}
+          </h3>
+        </div>
+
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          padding: '20px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+        }}>
+          <p style={{ margin: 0, color: '#666', fontSize: '14px', marginBottom: '8px' }}>Pessoa Jurídica</p>
+          <h3 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#f59e0b' }}>
+            {pjCustomers}
+          </h3>
+        </div>
+      </div>
+
       <div style={{
         background: 'white',
         borderRadius: '12px',
@@ -70,7 +117,7 @@ export default function Customers() {
           }} />
           <input
             type="text"
-            placeholder="Buscar clientes por nome ou CPF/CNPJ..."
+            placeholder="Buscar por nome, CPF/CNPJ ou email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
@@ -85,51 +132,6 @@ export default function Customers() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '20px',
-        marginBottom: '30px'
-      }}>
-        <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: '20px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '15px'
-        }}>
-          <FaUser style={{ fontSize: '32px', color: '#667eea' }} />
-          <div>
-            <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>Pessoa Física</p>
-            <h3 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#333' }}>
-              {customers.filter(c => c.type === 'INDIVIDUAL').length}
-            </h3>
-          </div>
-        </div>
-
-        <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: '20px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '15px'
-        }}>
-          <FaBuilding style={{ fontSize: '32px', color: '#10b981' }} />
-          <div>
-            <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>Pessoa Jurídica</p>
-            <h3 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#333' }}>
-              {customers.filter(c => c.type === 'COMPANY').length}
-            </h3>
-          </div>
-        </div>
-      </div>
-
-      {/* Table */}
       <div style={{
         background: 'white',
         borderRadius: '12px',
@@ -160,17 +162,11 @@ export default function Customers() {
             <tbody>
               {filteredCustomers.map((customer) => (
                 <tr key={customer.id} style={{ borderBottom: '1px solid #e5e5e5' }}>
-                  <td style={{ padding: '15px', fontSize: '14px' }}>
-                    {customer.type === 'INDIVIDUAL' ? 
-                      <FaUser style={{ color: '#667eea' }} /> : 
-                      <FaBuilding style={{ color: '#10b981' }} />
-                    }
+                  <td style={{ padding: '15px', fontSize: '14px', color: '#333' }}>
+                    {customer.type === 'PF' ? <FaUser style={{ color: '#667eea' }} /> : <FaBuilding style={{ color: '#10b981' }} />}
                   </td>
                   <td style={{ padding: '15px', fontSize: '14px', color: '#333', fontWeight: '500' }}>
                     {customer.name}
-                    {customer.tradeName && (
-                      <div style={{ fontSize: '12px', color: '#666' }}>{customer.tradeName}</div>
-                    )}
                   </td>
                   <td style={{ padding: '15px', fontSize: '14px', color: '#666' }}>
                     {customer.cpfCnpj}
