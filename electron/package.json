@@ -1,0 +1,6 @@
+{
+  "name": "tudogestao-plus-electron",
+  "version": "1.0.0",
+  "main": "main.js",
+  "description": "Electron wrapper for TudoGestão+"
+}

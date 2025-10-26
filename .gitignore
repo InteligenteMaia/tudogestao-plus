@@ -1,0 +1,53 @@
+# 👨‍💻 Michael Santos - Tech Lead
+# Arquivos que não devem ir para o repositório
+
+# Dependencies
+node_modules/
+dist/
+build/
+.pnp
+.pnp.js
+
+# Database
+*.db
+*.db-journal
+prisma/migrations/**/migration.sql
+
+# Environment
+.env
+.env.local
+.env.production
+*.key
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Backups
+backups/
+*.sql
+*.gz
+
+# Electron
+out/
+dist-electron/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temp
+tmp/
+temp/
+*.tmp

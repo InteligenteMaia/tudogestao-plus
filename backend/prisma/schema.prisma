@@ -1,0 +1,457 @@
+// 💼 Larissa Oliveira - Product Manager
+// ⚙️ Rubens Neto - Backend Developer
+// Schema completo do banco de dados - Todas as entidades e relacionamentos
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========== EMPRESA ==========
+model Company {
+  id            String   @id @default(uuid())
+  cnpj          String   @unique
+  name          String
+  tradeName     String?
+  email         String?
+  phone         String?
+  address       Json?
+  logo          String?
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Configurações
+  fiscalRegime  String?  // Simples Nacional, Lucro Presumido, Lucro Real
+  stateReg      String?  // Inscrição Estadual
+  cityReg       String?  // Inscrição Municipal
+  
+  // Relacionamentos
+  users         User[]
+  customers     Customer[]
+  suppliers     Supplier[]
+  products      Product[]
+  sales         Sale[]
+  transactions  Transaction[]
+  payables      AccountPayable[]
+  receivables   AccountReceivable[]
+  employees     Employee[]
+  bankAccounts  BankAccount[]
+  categories    Category[]
+  
+  @@map("companies")
+}
+
+// ========== USUÁRIOS ==========
+model User {
+  id            String   @id @default(uuid())
+  companyId     String
+  name          String
+  email         String   @unique
+  password      String
+  role          Role     @default(USER)
+  active        Boolean  @default(true)
+  avatar        String?
+  phone         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lastLogin     DateTime?
+  
+  // Relacionamentos
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  auditLogs     AuditLog[]
+  sales         Sale[]
+  
+  @@map("users")
+}
+
+enum Role {
+  ADMIN      // Acesso total
+  MANAGER    // Gerente - Pode ver relatórios e aprovar
+  SALESPERSON // Vendedor - Apenas vendas
+  FINANCIAL  // Financeiro - Apenas finanças
+  USER       // Usuário comum
+  VIEWER     // Apenas visualização
+}
+
+// ========== CLIENTES ==========
+model Customer {
+  id            String       @id @default(uuid())
+  companyId     String
+  type          CustomerType
+  cpfCnpj       String
+  name          String
+  email         String?
+  phone         String?
+  mobile        String?
+  address       Json?
+  notes         String?
+  creditLimit   Decimal?     @db.Decimal(10, 2)
+  active        Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  
+  // Campos adicionais
+  birthDate     DateTime?
+  rg            String?
+  profession    String?
+  
+  // Relacionamentos
+  company       Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  sales         Sale[]
+  receivables   AccountReceivable[]
+  
+  @@map("customers")
+}
+
+enum CustomerType {
+  INDIVIDUAL  // Pessoa Física
+  COMPANY     // Pessoa Jurídica
+}
+
+// ========== FORNECEDORES ==========
+model Supplier {
+  id            String   @id @default(uuid())
+  companyId     String
+  cnpj          String
+  name          String
+  tradeName     String?
+  email         String?
+  phone         String?
+  address       Json?
+  notes         String?
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relacionamentos
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  payables      AccountPayable[]
+  products      Product[]
+  
+  @@map("suppliers")
+}
+
+// ========== CATEGORIAS ==========
+model Category {
+  id            String   @id @default(uuid())
+  companyId     String
+  name          String
+  type          CategoryType
+  color         String?
+  icon          String?
+  parentId      String?
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  
+  // Relacionamentos
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  parent        Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children      Category[] @relation("CategoryHierarchy")
+  transactions  Transaction[]
+  products      Product[]
+  
+  @@map("categories")
+}
+
+enum CategoryType {
+  INCOME    // Receita
+  EXPENSE   // Despesa
+  PRODUCT   // Produto
+}
+
+// ========== PRODUTOS ==========
+model Product {
+  id            String   @id @default(uuid())
+  companyId     String
+  supplierId    String?
+  categoryId    String?
+  sku           String
+  barcode       String?
+  name          String
+  description   String?
+  unit          String   @default("UN") // UN, KG, L, etc
+  unitPrice     Decimal  @db.Decimal(10, 2)
+  costPrice     Decimal? @db.Decimal(10, 2)
+  stock         Int      @default(0)
+  minStock      Int?
+  maxStock      Int?
+  active        Boolean  @default(true)
+  
+  // Informações fiscais
+  ncm           String?  // Código NCM
+  cest          String?  // Código CEST
+  cfop          String?  // CFOP padrão
+  origin        String?  // Origem do produto
+  
+  // Imagem
+  image         String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relacionamentos
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  supplier      Supplier? @relation(fields: [supplierId], references: [id])
+  category      Category? @relation(fields: [categoryId], references: [id])
+  saleItems     SaleItem[]
+  stockMovements StockMovement[]
+  
+  @@unique([companyId, sku])
+  @@map("products")
+}
+
+// ========== CONTAS BANCÁRIAS ==========
+model BankAccount {
+  id            String   @id @default(uuid())
+  companyId     String
+  bankName      String
+  agency        String
+  account       String
+  accountType   String   // Corrente, Poupança
+  initialBalance Decimal @db.Decimal(10, 2)
+  currentBalance Decimal @db.Decimal(10, 2)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  
+  // Relacionamentos
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  transactions  Transaction[]
+  
+  @@map("bank_accounts")
+}
+
+// ========== VENDAS ==========
+model Sale {
+  id            String     @id @default(uuid())
+  companyId     String
+  customerId    String
+  userId        String
+  saleNumber    String     @unique
+  date          DateTime   @default(now())
+  totalAmount   Decimal    @db.Decimal(10, 2)
+  discount      Decimal?   @db.Decimal(10, 2)
+  shipping      Decimal?   @db.Decimal(10, 2)
+  netAmount     Decimal    @db.Decimal(10, 2)
+  status        SaleStatus @default(PENDING)
+  paymentMethod String?
+  paymentTerms  String?    // À vista, 30/60/90 dias, etc
+  notes         String?
+  
+  // NFe
+  nfeIssued     Boolean    @default(false)
+  nfeNumber     String?
+  nfeKey        String?
+  
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  // Relacionamentos
+  company       Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customer      Customer   @relation(fields: [customerId], references: [id])
+  user          User       @relation(fields: [userId], references: [id])
+  items         SaleItem[]
+  nfe           NFe?
+  receivables   AccountReceivable[]
+  
+  @@map("sales")
+}
+
+enum SaleStatus {
+  PENDING    // Pendente
+  PAID       // Pago
+  PARTIAL    // Parcialmente pago
+  CANCELLED  // Cancelado
+}
+
+model SaleItem {
+  id            String  @id @default(uuid())
+  saleId        String
+  productId     String
+  quantity      Int
+  unitPrice     Decimal @db.Decimal(10, 2)
+  discount      Decimal? @db.Decimal(10, 2)
+  total         Decimal @db.Decimal(10, 2)
+  
+  // Relacionamentos
+  sale          Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product       Product @relation(fields: [productId], references: [id])
+  
+  @@map("sale_items")
+}
+
+// ========== CONTAS A PAGAR ==========
+model AccountPayable {
+  id            String        @id @default(uuid())
+  companyId     String
+  supplierId    String?
+  categoryId    String?
+  description   String
+  amount        Decimal       @db.Decimal(10, 2)
+  dueDate       DateTime
+  paymentDate   DateTime?
+  status        PaymentStatus @default(PENDING)
+  paymentMethod String?
+  document      String?       // Número do documento/nota
+  notes         String?
+  installment   Int?          // Parcela X/Y
+  totalInstallments Int?
+  
+  // Multa e juros
+  fine          Decimal?      @db.Decimal(10, 2)
+  interest      Decimal?      @db.Decimal(10, 2)
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  // Relacionamentos
+  company       Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  supplier      Supplier?     @relation(fields: [supplierId], references: [id])
+  category      Category?     @relation(fields: [categoryId], references: [id])
+  
+  @@map("accounts_payable")
+}
+
+// ========== CONTAS A RECEBER ==========
+model AccountReceivable {
+  id            String        @id @default(uuid())
+  companyId     String
+  customerId    String?
+  saleId        String?
+  categoryId    String?
+  description   String
+  amount        Decimal       @db.Decimal(10, 2)
+  dueDate       DateTime
+  paymentDate   DateTime?
+  status        PaymentStatus @default(PENDING)
+  paymentMethod String?
+  document      String?
+  notes         String?
+  installment   Int?
+  totalInstallments Int?
+  
+  // Descontos e acréscimos
+  discount      Decimal?      @db.Decimal(10, 2)
+  fine          Decimal?      @db.Decimal(10, 2)
+  interest      Decimal?      @db.Decimal(10, 2)
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  // Relacionamentos
+  company       Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customer      Customer?     @relation(fields: [customerId], references: [id])
+  sale          Sale?         @relation(fields: [saleId], references: [id])
+  category      Category?     @relation(fields: [categoryId], references: [id])
+  
+  @@map("accounts_receivable")
+}
+
+enum PaymentStatus {
+  PENDING   // Pendente
+  PAID      // Pago
+  PARTIAL   // Parcialmente pago
+  OVERDUE   // Vencido
+  CANCELLED // Cancelado
+}
+
+// ========== TRANSAÇÕES CAIXA/BANCO ==========
+model Transaction {
+  id            String          @id @default(uuid())
+  companyId     String
+  bankAccountId String?
+  categoryId    String?
+  type          TransactionType
+  description   String
+  amount        Decimal         @db.Decimal(10, 2)
+  date          DateTime        @default(now())
+  paymentMethod String?
+  document      String?
+  notes         String?
+  reconciled    Boolean         @default(false)
+  
+  createdAt     DateTime        @default(now())
+  
+  // Relacionamentos
+  company       Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  bankAccount   BankAccount?    @relation(fields: [bankAccountId], references: [id])
+  category      Category?       @relation(fields: [categoryId], references: [id])
+  
+  @@map("transactions")
+}
+
+enum TransactionType {
+  INCOME    // Receita
+  EXPENSE   // Despesa
+  TRANSFER  // Transferência entre contas
+}
+
+// ========== MOVIMENTAÇÃO ESTOQUE ==========
+model StockMovement {
+  id            String       @id @default(uuid())
+  productId     String
+  type          MovementType
+  quantity      Int
+  date          DateTime     @default(now())
+  reason        String?
+  document      String?
+  notes         String?
+  
+  // Relacionamentos
+  product       Product      @relation(fields: [productId], references: [id])
+  
+  @@map("stock_movements")
+}
+
+enum MovementType {
+  ENTRY      // Entrada
+  EXIT       // Saída
+  ADJUSTMENT // Ajuste
+  RETURN     // Devolução
+  TRANSFER   // Transferência
+}
+
+// ========== FUNCIONÁRIOS ==========
+model Employee {
+  id            String   @id @default(uuid())
+  companyId     String
+  name          String
+  cpf           String   @unique
+  rg            String?
+  email         String?
+  phone         String?
+  address       Json?
+  position      String?
+  department    String?
+  salary        Decimal? @db.Decimal(10, 2)
+  commission    Decimal? @db.Decimal(5, 2) // Percentual
+  admissionDate DateTime
+  resignationDate DateTime?
+  active        Boolean  @default(true)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relacionamentos
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  payrolls      Payroll[]
+  
+  @@map("employees")
+}
+
+// ========== FOLHA DE PAGAMENTO ==========
+model Payroll {
+  id            String   @id @default(uuid())
+  employeeId    String
+  referenceMonth DateTime // Mês de referência
+  grossSalary   Decimal  @db.Decimal(10, 2)
+  inss          Decimal  @db.Decimal(10, 2)
+  irrf          Decimal  @db.Decimal(10, 2)
+  fgts          Decimal  @db.Decimal(10, 2)
+  benefits      Decimal? @db.Decimal(10, 2)
+  deductions    Decimal? @db.Decimal(10, 2)
+  netSalary     Decimal  @db.Decimal(10, 2
