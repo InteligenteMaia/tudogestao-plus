@@ -64,13 +64,7 @@ class AuthController {
       { expiresIn: JWT_EXPIRES_IN }
     );
 
-    // Atualiza último login
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { lastLogin: new Date() }
-    });
-
-    // Log de auditoria
+     // Log de auditoria
     await auditService.log(user.id, 'LOGIN', 'User', user.id, {
       email: user.email,
       ip: req.ip
