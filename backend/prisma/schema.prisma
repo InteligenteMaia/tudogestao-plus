@@ -454,4 +454,52 @@ model Payroll {
   fgts          Decimal  @db.Decimal(10, 2)
   benefits      Decimal? @db.Decimal(10, 2)
   deductions    Decimal? @db.Decimal(10, 2)
-  netSalary     Decimal  @db.Decimal(10, 2
+  netSalary     Decimal  @db.Decimal(10, 2)
+  paymentDate   DateTime?
+  status        String   @default("PENDING") // PENDING, PAID
+  
+  createdAt     DateTime @default(now())
+  
+  // Relacionamentos
+  employee      Employee @relation(fields: [employeeId], references: [id])
+  
+  @@map("payrolls")
+}
+
+// ========== NFe ==========
+model NFe {
+  id            String   @id @default(uuid())
+  saleId        String   @unique
+  number        String
+  serie         String
+  key           String   @unique
+  protocol      String?
+  xml           String?
+  pdf           String?
+  status        String   // PENDING, AUTHORIZED, CANCELLED, DENIED
+  statusMessage String?
+  issuedAt      DateTime @default(now())
+  
+  // Relacionamentos
+  sale          Sale     @relation(fields: [saleId], references: [id])
+  
+  @@map("nfes")
+}
+
+// ========== AUDITORIA ==========
+model AuditLog {
+  id            String   @id @default(uuid())
+  userId        String
+  action        String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT
+  entity        String   // Nome da tabela/entidade
+  entityId      String?
+  details       Json?
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+  
+  // Relacionamentos
+  user          User     @relation(fields: [userId], references: [id])
+  
+  @@map("audit_logs")
+}
