@@ -2,256 +2,206 @@
 // Controller de funcionários
 
 const { PrismaClient } = require('@prisma/client');
-const { AppError } = require('../middleware/error.middleware');
-const auditService = require('../services/audit.service');
-
 const prisma = new PrismaClient();
+const bcrypt = require('bcryptjs');
 
 class EmployeeController {
-  /**
-   * Lista funcionários
-   */
-  async list(req, res) {
-    const { page = 1, limit = 20, search, active } = req.query;
-    const skip = (page - 1) * limit;
-
-    const where = {
-      companyId: req.companyId,
-      ...(search && {
-        OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { cpf: { contains: search } },
-        ]
-      }),
-      ...(active !== undefined && { active: active === 'true' }),
-    };
-
-    const [employees, total] = await Promise.all([
-      prisma.employee.findMany({
-        where,
-        skip,
-        take: parseInt(limit),
-        orderBy: { name: 'asc' }
-      }),
-      prisma.employee.count({ where })
-    ]);
-
-    res.json({
-      employees,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / limit)
-      }
-    });
-  }
-
-  /**
-   * Busca funcionário por ID
-   */
-  async getById(req, res) {
-    const { id } = req.params;
-
-    const employee = await prisma.employee.findFirst({
-      where: { 
-        id,
-        companyId: req.companyId 
-      },
-      include: {
-        payrolls: {
-          orderBy: { referenceMonth: 'desc' },
-          take: 6
-        }
-      }
-    });
-
-    if (!employee) {
-      throw new AppError('Funcionário não encontrado', 404);
-    }
-
-    res.json(employee);
-  }
-
-  /**
-   * Cria funcionário
-   */
   async create(req, res) {
-    const data = {
-      ...req.body,
-      companyId: req.companyId,
-    };
+    try {
+      const { name, email, password, cpf, phone, role, salary, address } = req.body;
+      const { companyId } = req.user;
 
-    // Verifica se CPF já existe
-    const existing = await prisma.employee.findFirst({
-      where: { cpf: data.cpf }
-    });
+      // Verificar se email já existe
+      const existingEmployee = await prisma.employee.findFirst({
+        where: { email, companyId }
+      });
 
-    if (existing) {
-      throw new AppError('CPF já cadastrado', 409);
+      if (existingEmployee) {
+        return res.status(400).json({ error: 'Email já cadastrado' });
+      }
+
+      // Hash da senha
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const employee = await prisma.employee.create({
+        data: {
+          companyId,
+          name,
+          email,
+          password: hashedPassword,
+          cpf,
+          phone,
+          role,
+          salary: parseFloat(salary),
+          address,
+          active: true
+        }
+      });
+
+      // Remover senha da resposta
+      const { password: _, ...employeeWithoutPassword } = employee;
+
+      res.status(201).json(employeeWithoutPassword);
+    } catch (error) {
+      console.error('Erro:', error);
+      res.status(500).json({ error: 'Erro ao criar funcionário' });
     }
-
-    const employee = await prisma.employee.create({
-      data
-    });
-
-    await auditService.log(req.userId, 'CREATE', 'Employee', employee.id, data);
-
-    res.status(201).json({
-      message: 'Funcionário criado com sucesso',
-      employee
-    });
   }
 
-  /**
-   * Atualiza funcionário
-   */
+  async list(req, res) {
+    try {
+      const { companyId } = req.user;
+      const { page = 1, limit = 20, search, role } = req.query;
+
+      const where = {
+        companyId,
+        ...(search && {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } },
+            { cpf: { contains: search } }
+          ]
+        }),
+        ...(role && { role })
+      };
+
+      const [employees, total] = await Promise.all([
+        prisma.employee.findMany({
+          where,
+          skip: (page - 1) * limit,
+          take: parseInt(limit),
+          orderBy: { name: 'asc' },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            cpf: true,
+            phone: true,
+            role: true,
+            salary: true,
+            active: true,
+            createdAt: true
+          }
+        }),
+        prisma.employee.count({ where })
+      ]);
+
+      res.json({
+        employees,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      });
+    } catch (error) {
+      console.error('Erro:', error);
+      res.status(500).json({ error: 'Erro ao listar funcionários' });
+    }
+  }
+
+  async getById(req, res) {
+    try {
+      const { id } = req.params;
+      const { companyId } = req.user;
+
+      const employee = await prisma.employee.findFirst({
+        where: { id, companyId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          cpf: true,
+          phone: true,
+          role: true,
+          salary: true,
+          address: true,
+          active: true,
+          createdAt: true
+        }
+      });
+
+      if (!employee) {
+        return res.status(404).json({ error: 'Funcionário não encontrado' });
+      }
+
+      res.json(employee);
+    } catch (error) {
+      console.error('Erro:', error);
+      res.status(500).json({ error: 'Erro ao buscar funcionário' });
+    }
+  }
+
   async update(req, res) {
-    const { id } = req.params;
-    const data = req.body;
+    try {
+      const { id } = req.params;
+      const { companyId } = req.user;
+      const updateData = req.body;
 
-    const existing = await prisma.employee.findFirst({
-      where: { id, companyId: req.companyId }
-    });
+      const employee = await prisma.employee.findFirst({
+        where: { id, companyId }
+      });
 
-    if (!existing) {
-      throw new AppError('Funcionário não encontrado', 404);
+      if (!employee) {
+        return res.status(404).json({ error: 'Funcionário não encontrado' });
+      }
+
+      // Se está atualizando senha, fazer hash
+      if (updateData.password) {
+        updateData.password = await bcrypt.hash(updateData.password, 10);
+      }
+
+      // Se está atualizando salário, converter para float
+      if (updateData.salary) {
+        updateData.salary = parseFloat(updateData.salary);
+      }
+
+      const updated = await prisma.employee.update({
+        where: { id },
+        data: updateData,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          cpf: true,
+          phone: true,
+          role: true,
+          salary: true,
+          address: true,
+          active: true,
+          createdAt: true
+        }
+      });
+
+      res.json(updated);
+    } catch (error) {
+      console.error('Erro:', error);
+      res.status(500).json({ error: 'Erro ao atualizar funcionário' });
     }
-
-    const employee = await prisma.employee.update({
-      where: { id },
-      data
-    });
-
-    await auditService.log(req.userId, 'UPDATE', 'Employee', id, data);
-
-    res.json({
-      message: 'Funcionário atualizado com sucesso',
-      employee
-    });
   }
 
-  /**
-   * Deleta funcionário
-   */
   async delete(req, res) {
-    const { id } = req.params;
+    try {
+      const { id } = req.params;
+      const { companyId } = req.user;
 
-    const employee = await prisma.employee.findFirst({
-      where: { id, companyId: req.companyId }
-    });
+      const employee = await prisma.employee.findFirst({
+        where: { id, companyId }
+      });
 
-    if (!employee) {
-      throw new AppError('Funcionário não encontrado', 404);
-    }
-
-    await prisma.employee.delete({ where: { id } });
-
-    await auditService.log(req.userId, 'DELETE', 'Employee', id);
-
-    res.json({ message: 'Funcionário excluído com sucesso' });
-  }
-
-  /**
-   * Gera folha de pagamento
-   */
-  async generatePayroll(req, res) {
-    const { employeeId, referenceMonth, benefits, deductions } = req.body;
-
-    const employee = await prisma.employee.findFirst({
-      where: { 
-        id: employeeId,
-        companyId: req.companyId 
+      if (!employee) {
+        return res.status(404).json({ error: 'Funcionário não encontrado' });
       }
-    });
 
-    if (!employee) {
-      throw new AppError('Funcionário não encontrado', 404);
+      await prisma.employee.delete({ where: { id } });
+
+      res.json({ message: 'Funcionário excluído com sucesso' });
+    } catch (error) {
+      console.error('Erro:', error);
+      res.status(500).json({ error: 'Erro ao excluir funcionário' });
     }
-
-    // Calcula descontos (INSS, IRRF, FGTS)
-    const grossSalary = parseFloat(employee.salary);
-    const inss = calculateINSS(grossSalary);
-    const irrf = calculateIRRF(grossSalary - inss);
-    const fgts = grossSalary * 0.08; // 8%
-
-    const netSalary = grossSalary 
-      - inss 
-      - irrf 
-      + (benefits || 0) 
-      - (deductions || 0);
-
-    const payroll = await prisma.payroll.create({
-      data: {
-        employeeId,
-        referenceMonth: new Date(referenceMonth),
-        grossSalary,
-        inss,
-        irrf,
-        fgts,
-        benefits,
-        deductions,
-        netSalary,
-        status: 'PENDING'
-      }
-    });
-
-    await auditService.log(req.userId, 'GENERATE_PAYROLL', 'Payroll', payroll.id);
-
-    res.status(201).json({
-      message: 'Folha de pagamento gerada com sucesso',
-      payroll
-    });
   }
-
-  /**
-   * Pagar folha
-   */
-  async payPayroll(req, res) {
-    const { id } = req.params;
-    const { paymentDate } = req.body;
-
-    const payroll = await prisma.payroll.findUnique({
-      where: { id }
-    });
-
-    if (!payroll) {
-      throw new AppError('Folha não encontrada', 404);
-    }
-
-    if (payroll.status === 'PAID') {
-      throw new AppError('Folha já foi paga', 400);
-    }
-
-    await prisma.payroll.update({
-      where: { id },
-      data: {
-        status: 'PAID',
-        paymentDate: new Date(paymentDate)
-      }
-    });
-
-    await auditService.log(req.userId, 'PAY_PAYROLL', 'Payroll', id);
-
-    res.json({ message: 'Pagamento registrado com sucesso' });
-  }
-}
-
-// Funções de cálculo (simplificadas - usar tabelas oficiais em produção)
-function calculateINSS(salary) {
-  if (salary <= 1320) return salary * 0.075;
-  if (salary <= 2571.29) return salary * 0.09;
-  if (salary <= 3856.94) return salary * 0.12;
-  if (salary <= 7507.49) return salary * 0.14;
-  return 7507.49 * 0.14; // Teto
-}
-
-function calculateIRRF(baseCalculo) {
-  if (baseCalculo <= 2112) return 0;
-  if (baseCalculo <= 2826.65) return baseCalculo * 0.075 - 158.40;
-  if (baseCalculo <= 3751.05) return baseCalculo * 0.15 - 370.40;
-  if (baseCalculo <= 4664.68) return baseCalculo * 0.225 - 651.73;
-  return baseCalculo * 0.275 - 884.96;
 }
 
 module.exports = new EmployeeController();
