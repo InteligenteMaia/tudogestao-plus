@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TudoGestão+ | Conheça Nossa Equipe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #007AFF;
+            --secondary: #5856D6;
+            --success: #34C759;
+            --warning: #FF9500;
+            --danger: #FF3B30;
+            --dark: #1C1C1E;
+            --light: #F2F2F7;
+            --white: #FFFFFF;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            background: var(--gradient);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,165.3C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+            background-size: cover;
+            opacity: 0.3;
+        }
+
+        header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            animation: fadeInDown 1s ease;
+        }
+
+        header p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+            animation: fadeInUp 1s ease 0.2s both;
+        }
+
+        /* Navigation */
+        nav {
+            background: white;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: var(--dark);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: 80px;
+            animation: fadeIn 1s ease;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-align: center;
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+
+        /* Team Grid */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        /* Team Card */
+        .team-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .team-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .team-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        .team-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+
+        .card-header h3 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .card-header .role {
+            color: var(--secondary);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .info-table {
+            background: var(--light);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .info-value {
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        .badge-primary { background: var(--primary); color: white; }
+        .badge-success { background: var(--success); color: white; }
+        .badge-warning { background: var(--warning); color: white; }
+
+        .responsibilities {
+            margin: 20px 0;
+        }
+
+        .responsibilities ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .responsibilities li {
+            padding: 10px 0 10px 30px;
+            position: relative;
+            color: var(--dark);
+        }
+
+        .responsibilities li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .tech-badge {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .benefits {
+            margin-top: 20px;
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .benefit-item:hover {
+            transform: translateX(5px);
+        }
+
+        /* Stats Section */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        /* Salary Comparison */
+        .salary-table {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        .salary-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .salary-table th {
+            background: var(--gradient);
+            color: white;
+            padding: 20px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .salary-table td {
+            padding: 20px;
+            border-bottom: 1px solid var(--light);
+        }
+
+        .salary-table tr:hover {
+            background: var(--light);
+        }
+
+        /* Benefits Grid */
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .benefit-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+        }
+
+        .benefit-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 60px 20px 30px;
+            text-align: center;
+        }
+
+        footer h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        footer p {
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,122,255,0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background: var(--light);
+            transform: translateY(-3px);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            header p {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+
+            nav {
+                gap: 10px;
+            }
+
+            nav a {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Scroll Progress Bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--gradient);
+            z-index: 10000;
+            transition: width 0.1s ease;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-top: 40px;
+        }
+
+        .salary-bar {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .bar-label {
+            width: 200px;
+            font-weight: 600;
+        }
+
+        .bar-container {
+            flex: 1;
+            background: var(--light);
+            height: 40px;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 15px;
+            color: white;
+            font-weight: 600;
+            transition: width 1s ease;
+        }
+
+        /* Toggle Details */
+        .details-toggle {
+            cursor: pointer;
+            user-select: none;
+            padding: 15px;
+            background: var(--light);
+            border-radius: 12px;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+
+        .details-toggle:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .details-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+
+        .details-content.active {
+            max-height: 2000px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Header -->
+    <header>
+        <h1>👥 Equipe TudoGestão+</h1>
+        <p>Conheça os profissionais por trás do melhor ERP do mercado</p>
+    </header>
+
+    <!-- Navigation -->
+    <nav id="mainNav">
+        <a href="#equipe">👥 Equipe</a>
+        <a href="#stats">📊 Estatísticas</a>
+        <a href="#salarios">💰 Salários</a>
+        <a href="#beneficios">🎁 Benefícios</a>
+        <a href="#carreira">🚀 Carreira</a>
+        <a href="#vagas">💼 Vagas</a>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        
+        <!-- Statistics Section -->
+        <section id="stats" class="section">
+            <h2 class="section-title">📊 Nossa Equipe em Números</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-value">7</div>
+                    <div class="stat-label">Profissionais</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-value">R$ 1,3M</div>
+                    <div class="stat-label">Folha Anual</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-value">42+</div>
+                    <div class="stat-label">Anos de Experiência</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-value">100%</div>
+                    <div class="stat-label">Satisfação</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Team Section -->
+        <section id="equipe" class="section">
+            <h2 class="section-title">🌟 Conheça Nossa Equipe</h2>
+            
+            <div class="team-grid">
+                <!-- Michael Oliveia dos Santos -->
+                <div class="team-card">
+                    <div class="card-header">
+                        <div class="avatar">👨‍💻</div>
+                        <h3>Michael Oliveira dos Santos</h3>
+                        <div class="role">Tech Lead & Arquiteto de Software</div>
+                        <div style="margin-top: 10px;">
+                            <span class="badge badge-primary">Sênior Plus</span>
+                            <span class="badge badge-success">10+ anos</span>
+                        </div>
+                    </div>
+
+                    <div class="info-table">
+                        <div class="info-row">
+                            <span class="info-label">💰 Salário</span>
+                            <span class="info-value">R$ 18.000/mês</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">🎁 Bônus</span>
+                            <span class="info-value">Até R$ 64.800/ano</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">📍 Modelo</span>
+                            <span class="info-value">100% Home Office</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">⏰ Horário</span>
+                            <span class="info-value">09h-18h (Flexível)</span>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        📋 Ver Responsabilidades ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="responsibilities">
+                            <ul>
+                                <li>Definição da arquitetura de software</li>
+                                <li>Liderança técnica da equipe</li>
+                                <li>Code review e qualidade do código</li>
+                                <li>Desenvolvimento do sistema de licenciamento</li>
+                                <li>Mentoria dos desenvolvedores</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        🛠️ Ver Stack Tecnológica ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="tech-stack">
+                            <span class="tech-badge">Node.js</span>
+                            <span class="tech-badge">TypeScript</span>
+                            <span class="tech-badge">PostgreSQL</span>
+                            <span class="tech-badge">Prisma ORM</span>
+                            <span class="tech-badge">Docker</span>
+                            <span class="tech-badge">Kubernetes</span>
+                            <span class="tech-badge">AWS</span>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        🎁 Ver Benefícios ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="benefits">
+                            <div class="benefit-item">🚗 Vale combustível: R$ 800/mês</div>
+                            <div class="benefit-item">💻 MacBook Pro M3 Max + Monitor 5K</div>
+                            <div class="benefit-item">📚 Budget educação: R$ 10.000/ano</div>
+                            <div class="benefit-item">🎯 Stock options da empresa</div>
+                            <div class="benefit-item">📱 iPhone 15 Pro corporativo</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Larissa Fernanda Correia Oliveira -->
+                <div class="team-card">
+                    <div class="card-header">
+                        <div class="avatar">💼</div>
+                        <h3>Larissa Oliveira</h3>
+                        <div class="role">Product Manager</div>
+                        <div style="margin-top: 10px;">
+                            <span class="badge badge-primary">Sênior</span>
+                            <span class="badge badge-success">8 anos</span>
+                        </div>
+                    </div>
+
+                    <div class="info-table">
+                        <div class="info-row">
+                            <span class="info-label">💰 Salário</span>
+                            <span class="info-value">R$ 13.500/mês</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">🎁 Bônus</span>
+                            <span class="info-value">Até R$ 48.600/ano</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">📍 Modelo</span>
+                            <span class="info-value">100% Home Office</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">⏰ Horário</span>
+                            <span class="info-value">09h-18h</span>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        📋 Ver Responsabilidades ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="responsibilities">
+                            <ul>
+                                <li>Definição de roadmap do produto</li>
+                                <li>Priorização de funcionalidades</li>
+                                <li>Pesquisa com usuários e stakeholders</li>
+                                <li>Análise de métricas de negócio</li>
+                                <li>Gestão de backlog do produto</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        🛠️ Ver Stack Tecnológica ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="tech-stack">
+                            <span class="tech-badge">Jira</span>
+                            <span class="tech-badge">Confluence</span>
+                            <span class="tech-badge">Figma</span>
+                            <span class="tech-badge">Google Analytics</span>
+                            <span class="tech-badge">Mixpanel</span>
+                            <span class="tech-badge">SQL</span>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        🎁 Ver Benefícios ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="benefits">
+                            <div class="benefit-item">🍕 Budget almoço: R$ 1.000/mês</div>
+                            <div class="benefit-item">💻 MacBook Pro M2 + iPad Pro</div>
+                            <div class="benefit-item">📚 Budget educação: R$ 8.000/ano</div>
+                            <div class="benefit-item">🏋️ Gympass Black</div>
+                            <div class="benefit-item">📱 iPhone 14 Pro corporativo</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rubens da Cunha Bueno Neto -->
+                <div class="team-card">
+                    <div class="card-header">
+                        <div class="avatar">⚙️</div>
+                        <h3>Rubens da Cunha Bueno Neto</h3>
+                        <div class="role">Backend Developer</div>
+                        <div style="margin-top: 10px;">
+                            <span class="badge badge-primary">Sênior</span>
+                            <span class="badge badge-success">7 anos</span>
+                        </div>
+                    </div>
+
+                    <div class="info-table">
+                        <div class="info-row">
+                            <span class="info-label">💰 Salário</span>
+                            <span class="info-value">R$ 12.000/mês</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">🎁 Bônus</span>
+                            <span class="info-value">Até R$ 43.200/ano</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">📍 Modelo</span>
+                            <span class="info-value">Híbrido (3x2)</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">⏰ Horário</span>
+                            <span class="info-value">09h-18h</span>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        📋 Ver Responsabilidades ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="responsibilities">
+                            <ul>
+                                <li>Desenvolvimento de APIs RESTful</li>
+                                <li>Implementação de lógica de negócio</li>
+                                <li>Sistema de autenticação JWT</li>
+                                <li>Otimização de queries</li>
+                                <li>Testes unitários e de integração</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        🛠️ Ver Stack Tecnológica ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="tech-stack">
+                            <span class="tech-badge">Node.js</span>
+                            <span class="tech-badge">Express</span>
+                            <span class="tech-badge">PostgreSQL</span>
+                            <span class="tech-badge">Sequelize</span>
+                            <span class="tech-badge">Redis</span>
+                            <span class="tech-badge">Jest</span>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        🎁 Ver Benefícios ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="benefits">
+                            <div class="benefit-item">🍕 Budget almoço: R$ 1.000/mês</div>
+                            <div class="benefit-item">💻 MacBook Pro M2 + Monitor 4K</div>
+                            <div class="benefit-item">📚 Budget educação: R$ 5.000/ano</div>
+                            <div class="benefit-item">🏋️ Gympass Premium</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Felipe Gomes Gonzaga -->
+                <div class="team-card">
+                    <div class="card-header">
+                        <div class="avatar">💻</div>
+                        <h3>Felipe Gomes Gonzaga</h3>
+                        <div class="role">Frontend Developer</div>
+                        <div style="margin-top: 10px;">
+                            <span class="badge badge-primary">Sênior</span>
+                            <span class="badge badge-success">6 anos</span>
+                        </div>
+                    </div>
+
+                    <div class="info-table">
+                        <div class="info-row">
+                            <span class="info-label">💰 Salário</span>
+                            <span class="info-value">R$ 11.000/mês</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">🎁 Bônus</span>
+                            <span class="info-value">Até R$ 39.600/ano</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">📍 Modelo</span>
+                            <span class="info-value">100% Home Office</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">⏰ Horário</span>
+                            <span class="info-value">09h-18h</span>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        📋 Ver Responsabilidades ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="responsibilities">
+                            <ul>
+                                <li>Desenvolvimento de interfaces React</li>
+                                <li>Gerenciamento de estado com Redux</li>
+                                <li>Implementação de design system</li>
+                                <li>Otimização de performance frontend</li>
+                                <li>Responsividade e acessibilidade</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        🛠️ Ver Stack Tecnológica ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="tech-stack">
+                            <span class="tech-badge">React</span>
+                            <span class="tech-badge">Next.js</span>
+                            <span class="tech-badge">Redux Toolkit</span>
+                            <span class="tech-badge">TailwindCSS</span>
+                            <span class="tech-badge">TypeScript</span>
+                            <span class="tech-badge">Vite</span>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        🎁 Ver Benefícios ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="benefits">
+                            <div class="benefit-item">🍕 Budget almoço: R$ 900/mês</div>
+                            <div class="benefit-item">💻 MacBook Pro M2 + Monitor 4K</div>
+                            <div class="benefit-item">📚 Budget educação: R$ 5.000/ano</div>
+                            <div class="benefit-item">🏋️ Gympass Premium</div>
+                            <div class="benefit-item">🎨 Adobe Creative Cloud</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thaynara Ribeiro -->
+                <div class="team-card">
+                    <div class="card-header">
+                        <div class="avatar">🔧</div>
+                        <h3>Thaynara Ribeiro</h3>
+                        <div class="role">Full Stack Developer</div>
+                        <div style="margin-top: 10px;">
+                            <span class="badge badge-primary">Pleno+</span>
+                            <span class="badge badge-success">5 anos</span>
+                        </div>
+                    </div>
+
+                    <div class="info-table">
+                        <div class="info-row">
+                            <span class="info-label">💰 Salário</span>
+                            <span class="info-value">R$ 10.500/mês</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">🎁 Bônus</span>
+                            <span class="info-value">Até R$ 37.800/ano</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">📍 Modelo</span>
+                            <span class="info-value">Híbrido (2x3)</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">⏰ Horário</span>
+                            <span class="info-value">10h-19h</span>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        📋 Ver Responsabilidades ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="responsibilities">
+                            <ul>
+                                <li>Desenvolvimento full stack</li>
+                                <li>CRUD completo de entidades</li>
+                                <li>Gestão de clientes e fornecedores</li>
+                                <li>Controle de estoque</li>
+                                <li>Integração frontend-backend</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        🛠️ Ver Stack Tecnológica ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="tech-stack">
+                            <span class="tech-badge">Node.js</span>
+                            <span class="tech-badge">React</span>
+                            <span class="tech-badge">PostgreSQL</span>
+                            <span class="tech-badge">TypeScript</span>
+                            <span class="tech-badge">REST APIs</span>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        🎁 Ver Benefícios ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="benefits">
+                            <div class="benefit-item">🍕 Budget almoço: R$ 900/mês</div>
+                            <div class="benefit-item">💻 MacBook Air M2 + Monitor 4K</div>
+                            <div class="benefit-item">📚 Budget educação: R$ 5.000/ano</div>
+                            <div class="benefit-item">🏋️ Gympass Standard</div>
+                            <div class="benefit-item">🚗 Vale transporte integral</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Eliseu Nunes Gama Junior -->
+                <div class="team-card">
+                    <div class="card-header">
+                        <div class="avatar">🚀</div>
+                        <h3>Eliseu Nunes Gama Junior</h3>
+                        <div class="role">Full Stack Developer</div>
+                        <div style="margin-top: 10px;">
+                            <span class="badge badge-primary">Pleno</span>
+                            <span class="badge badge-success">4 anos</span>
+                        </div>
+                    </div>
+
+                    <div class="info-table">
+                        <div class="info-row">
+                            <span class="info-label">💰 Salário</span>
+                            <span class="info-value">R$ 10.000/mês</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">🎁 Bônus</span>
+                            <span class="info-value">Até R$ 36.000/ano</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">📍 Modelo</span>
+                            <span class="info-value">Presencial</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">⏰ Horário</span>
+                            <span class="info-value">09h-18h</span>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        📋 Ver Responsabilidades ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="responsibilities">
+                            <ul>
+                                <li>Sistema de NFe</li>
+                                <li>Integração com APIs fiscais</li>
+                                <li>PDV (Ponto de Venda)</li>
+                                <li>Geração de DANFEs e XMLs</li>
+                                <li>Compliance fiscal</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        🛠️ Ver Stack Tecnológica ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="tech-stack">
+                            <span class="tech-badge">Node.js</span>
+                            <span class="tech-badge">React</span>
+                            <span class="tech-badge">APIs Fiscais</span>
+                            <span class="tech-badge">NFe/NFCe</span>
+                            <span class="tech-badge">WebSockets</span>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        🎁 Ver Benefícios ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="benefits">
+                            <div class="benefit-item">🍕 Budget almoço: R$ 800/mês</div>
+                            <div class="benefit-item">💻 Dell XPS + Monitor Full HD</div>
+                            <div class="benefit-item">📚 Budget educação: R$ 5.000/ano</div>
+                            <div class="benefit-item">🏋️ Gympass Standard</div>
+                            <div class="benefit-item">🚗 Vale transporte integral</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Najla Viana Cardeal -->
+                <div class="team-card">
+                    <div class="card-header">
+                        <div class="avatar">🎨</div>
+                        <h3>Najla Viana Cardeal</h3>
+                        <div class="role">QA Engineer & UI/UX Designer</div>
+                        <div style="margin-top: 10px;">
+                            <span class="badge badge-primary">Pleno+</span>
+                            <span class="badge badge-success">5 anos</span>
+                        </div>
+                    </div>
+
+                    <div class="info-table">
+                        <div class="info-row">
+                            <span class="info-label">💰 Salário</span>
+                            <span class="info-value">R$ 9.500/mês</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">🎁 Bônus</span>
+                            <span class="info-value">Até R$ 34.200/ano</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">📍 Modelo</span>
+                            <span class="info-value">Híbrido (2x3)</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">⏰ Horário</span>
+                            <span class="info-value">09h-18h</span>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        📋 Ver Responsabilidades ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="responsibilities">
+                            <ul>
+                                <li>Design system completo</li>
+                                <li>UI/UX de todas as telas</li>
+                                <li>Testes manuais e automatizados</li>
+                                <li>Quality assurance</li>
+                                <li>Prototipação no Figma</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        🛠️ Ver Stack Tecnológica ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="tech-stack">
+                            <span class="tech-badge">Figma</span>
+                            <span class="tech-badge">Adobe XD</span>
+                            <span class="tech-badge">Selenium</span>
+                            <span class="tech-badge">Cypress</span>
+                            <span class="tech-badge">Jest</span>
+                            <span class="tech-badge">TailwindCSS</span>
+                        </div>
+                    </div>
+
+                    <div class="details-toggle" onclick="toggleDetails(this)">
+                        🎁 Ver Benefícios ▼
+                    </div>
+                    <div class="details-content">
+                        <div class="benefits">
+                            <div class="benefit-item">🍕 Budget almoço: R$ 800/mês</div>
+                            <div class="benefit-item">💻 MacBook Air M2 + Monitor 4K</div>
+                            <div class="benefit-item">📚 Budget educação: R$ 5.000/ano</div>
+                            <div class="benefit-item">🏋️ Gympass Standard</div>
+                            <div class="benefit-item">🎨 Adobe Creative Cloud</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Salary Comparison -->
+        <section id="salarios" class="section">
+            <h2 class="section-title">💰 Comparativo Salarial</h2>
+            
+            <div class="chart-container">
+                <h3 style="margin-bottom: 30px; color: var(--primary);">Total Anual por Profissional</h3>
+                
+                <div class="salary-bar">
+                    <div class="bar-label">👨‍💻 Michael Oliveira dos Santos</div>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: 0%;" data-width="100%">R$ 280.800</div>
+                    </div>
+                </div>
+
+                <div class="salary-bar">
+                    <div class="bar-label">💼 Larissa Oliveira</div>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: 0%;" data-width="75%">R$ 210.600</div>
+                    </div>
+                </div>
+
+                <div class="salary-bar">
+                    <div class="bar-label">⚙️ Rubens da Cunha Bueno Neto</div>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: 0%;" data-width="66.7%">R$ 187.200</div>
+                    </div>
+                </div>
+
+                <div class="salary-bar">
+                    <div class="bar-label">💻 Felipe Gomes Gonzaga</div>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: 0%;" data-width="61.1%">R$ 171.600</div>
+                    </div>
+                </div>
+
+                <div class="salary-bar">
+                    <div class="bar-label">🔧 Thaynara Ribeiro</div>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: 0%;" data-width="58.3%">R$ 163.800</div>
+                    </div>
+                </div>
+
+                <div class="salary-bar">
+                    <div class="bar-label">🚀 Eliseu Nunes Gama Junior</div>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: 0%;" data-width="55.6%">R$ 156.000</div>
+                    </div>
+                </div>
+
+                <div class="salary-bar">
+                    <div class="bar-label">🎨 Najla Viana Cardeal</div>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: 0%;" data-width="52.8%">R$ 148.200</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px; text-align: center;">
+                    <h3 style="font-size: 2rem; color: var(--primary);">💰 Total da Folha Anual: R$ 1.318.200</h3>
+                </div>
+            </div>
+
+            <div class="salary-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Profissional</th>
+                            <th>Salário Base</th>
+                            <th>Bônus Máximo</th>
+                            <th>Total Anual</th>
+                            <th>Senioridade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>👨‍💻 Michael Oliveira dos Santos</td>
+                            <td>R$ 18.000</td>
+                            <td>R$ 64.800</td>
+                            <td><strong>R$ 280.800</strong></td>
+                            <td><span class="badge badge-primary">Sênior Plus</span></td>
+                        </tr>
+                        <tr>
+                            <td>💼 Larissa Oliveira</td>
+                            <td>R$ 13.500</td>
+                            <td>R$ 48.600</td>
+                            <td><strong>R$ 210.600</strong></td>
+                            <td><span class="badge badge-primary">Sênior</span></td>
+                        </tr>
+                        <tr>
+                            <td>⚙️ Rubens da Cunha Bueno Neto</td>
+                            <td>R$ 12.000</td>
+                            <td>R$ 43.200</td>
+                            <td><strong>R$ 187.200</strong></td>
+                            <td><span class="badge badge-primary">Sênior</span></td>
+                        </tr>
+                        <tr>
+                            <td>💻 Felipe Gomes Gonzaga</td>
+                            <td>R$ 11.000</td>
+                            <td>R$ 39.600</td>
+                            <td><strong>R$ 171.600</strong></td>
+                            <td><span class="badge badge-primary">Sênior</span></td>
+                        </tr>
+                        <tr>
+                            <td>🔧 Thaynara Ribeiro</td>
+                            <td>R$ 10.500</td>
+                            <td>R$ 37.800</td>
+                            <td><strong>R$ 163.800</strong></td>
+                            <td><span class="badge badge-warning">Pleno+</span></td>
+                        </tr>
+                        <tr>
+                            <td>🚀 Eliseu Nunes Gama Junior</td>
+                            <td>R$ 10.000</td>
+                            <td>R$ 36.000</td>
+                            <td><strong>R$ 156.000</strong></td>
+                            <td><span class="badge badge-warning">Pleno</span></td>
+                        </tr>
+                        <tr>
+                            <td>🎨 Najla Viana Cardeal</td>
+                            <td>R$ 9.500</td>
+                            <td>R$ 34.200</td>
+                            <td><strong>R$ 148.200</strong></td>
+                            <td><span class="badge badge-warning">Pleno+</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Benefits Section -->
+        <section id="beneficios" class="section">
+            <h2 class="section-title">🎁 Pacote Completo de Benefícios</h2>
+            
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <h3>🏥 Saúde e Bem-Estar</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>Plano de Saúde</strong><br>
+                            Unimed Nacional - Apartamento
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>Plano Odontológico</strong><br>
+                            SulAmérica Odonto
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>Gympass</strong><br>
+                            Black/Premium/Standard
+                        </li>
+                        <li style="padding: 10px 0;">
+                            <strong>Psicoterapia</strong><br>
+                            8 sessões/mês cobertas
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="benefit-card">
+                    <h3>💰 Financeiro</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>Vale Refeição</strong><br>
+                            R$ 800-1.000/mês
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>Vale Transporte</strong><br>
+                            Custeio integral
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>PLR (Bônus)</strong><br>
+                            Até 30% anual
+                        </li>
+                        <li style="padding: 10px 0;">
+                            <strong>13º Salário</strong><br>
+                            Duas parcelas
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="benefit-card">
+                    <h3>📚 Desenvolvimento</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>Budget de Cursos</strong><br>
+                            R$ 5.000-10.000/ano
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>Livros Técnicos</strong><br>
+                            R$ 500/ano
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>Conferências</strong><br>
+                            Nacionais e Internacionais
+                        </li>
+                        <li style="padding: 10px 0;">
+                            <strong>Idiomas</strong><br>
+                            50% de reembolso
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="benefit-card">
+                    <h3>💻 Equipamentos</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>MacBook Pro/Air</strong><br>
+                            M2 ou M3 Max
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>Monitor 4K/5K</strong><br>
+                            LG ou Dell UltraFine
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>Periféricos Premium</strong><br>
+                            Teclado, Mouse, Headset
+                        </li>
+                        <li style="padding: 10px 0;">
+                            <strong>Cadeira Ergonômica</strong><br>
+                            Herman Miller
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="benefit-card">
+                    <h3>🏖️ Tempo Livre</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>30 Dias de Férias</strong><br>
+                            + 1/3 constitucional
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>10 Dias de Recesso</strong><br>
+                            Final de ano
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>Day Off Aniversário</strong><br>
+                            Folga no mês
+                        </li>
+                        <li style="padding: 10px 0;">
+                            <strong>Home Office</strong><br>
+                            Flexibilidade total
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="benefit-card">
+                    <h3>🎉 Cultura e Eventos</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>Happy Hours</strong><br>
+                            Mensal - R$ 300/pessoa
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>Team Building</strong><br>
+                            Eventos trimestrais
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid var(--light);">
+                            <strong>Festa de Fim de Ano</strong><br>
+                            Confraternização anual
+                        </li>
+                        <li style="padding: 10px 0;">
+                            <strong>Sexta Casual</strong><br>
+                            Dress code livre
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Career Section -->
+        <section id="carreira" class="section">
+            <h2 class="section-title">🚀 Plano de Carreira</h2>
+            
+            <div class="chart-container">
+                <h3 style="margin-bottom: 30px; color: var(--primary);">Progressão de Carreira</h3>
+                
+                <div style="text-align: center; padding: 40px; background: var(--light); border-radius: 16px; font-family: monospace; font-size: 1.1rem; line-height: 2;">
+                    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 20px;">
+                        <span class="badge badge-warning">Junior</span>
+                        <span>→</span>
+                        <span class="badge badge-warning">Pleno</span>
+                        <span>→</span>
+                        <span class="badge badge-warning">Pleno+</span>
+                        <span>→</span>
+                        <span class="badge badge-primary">Sênior</span>
+                        <span>→</span>
+                        <span class="badge badge-primary">Sênior+</span>
+                        <span>→</span>
+                        <span class="badge badge-success">Tech Lead</span>
+                        <span>→</span>
+                        <span class="badge badge-success">CTO</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; color: var(--secondary);">
+                        <span>1-2 anos</span>
+                        <span></span>
+                        <span>2-3 anos</span>
+                        <span></span>
+                        <span>1-2 anos</span>
+                        <span></span>
+                        <span>2-3 anos</span>
+                        <span></span>
+                        <span>2-3 anos</span>
+                        <span></span>
+                        <span>3+ anos</span>
+                        <span></span>
+                        <span>5+ anos</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px;">
+                    <h3 style="margin-bottom: 20px; color: var(--primary);">📈 Aumentos Salariais</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                        <div style="background: var(--light); padding: 20px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 2rem; color: var(--success); font-weight: 700;">15-25%</div>
+                            <div style="font-weight: 600; margin-top: 10px;">Promoção</div>
+                        </div>
+                        <div style="background: var(--light); padding: 20px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 2rem; color: var(--primary); font-weight: 700;">5-8%</div>
+                            <div style="font-weight: 600; margin-top: 10px;">Anual (Inflação)</div>
+                        </div>
+                        <div style="background: var(--light); padding: 20px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 2rem; color: var(--warning); font-weight: 700;">10-15%</div>
+                            <div style="font-weight: 600; margin-top: 10px;">Meritocracia</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px;">
+                    <h3 style="margin-bottom: 20px; color: var(--primary);">💰 Sistema de Bônus</h3>
+                    <div style="background: var(--light); padding: 30px; border-radius: 16px;">
+                        <p style="margin-bottom: 20px;">Bônus calculado trimestralmente baseado em:</p>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="padding: 10px; margin: 10px 0; background: white; border-radius: 8px;">
+                                🌟 <strong>Excepcional:</strong> 10% do salário
+                            </li>
+                            <li style="padding: 10px; margin: 10px 0; background: white; border-radius: 8px;">
+                                ⭐ <strong>Acima da Expectativa:</strong> 7.5% do salário
+                            </li>
+                            <li style="padding: 10px; margin: 10px 0; background: white; border-radius: 8px;">
+                                ✅ <strong>Atende:</strong> 5% do salário
+                            </li>
+                            <li style="padding: 10px; margin: 10px 0; background: white; border-radius: 8px;">
+                                ⚠️ <strong>Abaixo:</strong> 0%
+                            </li>
+                        </ul>
+                        <p style="margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">
+                            Performance individual (60%) + Performance da empresa (40%)
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer / Call to Action -->
+    <footer id="vagas">
+        <h2>💙 Junte-se à Nossa Equipe!</h2>
+        <p>Quer fazer parte deste time incrível? Confira nossas vagas abertas!</p>
+        
+        <div class="cta-buttons">
+            <a href="mailto:vagas@tudogestao.com" class="btn btn-primary">📧 Enviar Currículo</a>
+            <a href="https://linkedin.com/company/tudogestao" class="btn btn-secondary">💼 LinkedIn</a>
+            <a href="https://tudogestao.com/careers" class="btn btn-secondary">🌐 Site de Carreiras</a>
+        </div>
+
+        <div style="margin-top: 60px; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); opacity: 0.6;">
+            <p><strong>TudoGestão+ © 2025</strong> - Onde talento encontra oportunidade</p>
+        </div>
+    </footer>
+
+    <script>
+        // Scroll Progress Bar
+        window.addEventListener('scroll', () => {
+            const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (window.scrollY / windowHeight) * 100;
+            document.getElementById('progressBar').style.width = scrolled + '%';
+        });
+
+        // Toggle Details
+        function toggleDetails(element) {
+            const content = element.nextElementSibling;
+            content.classList.toggle('active');
+            
+            if (content.classList.contains('active')) {
+                element.textContent = element.textContent.replace('▼', '▲');
+            } else {
+                element.textContent = element.textContent.replace('▲', '▼');
+            }
+        }
+
+        // Animate salary bars on scroll
+        const observerOptions = {
+            threshold: 0.5
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const bars = entry.target.querySelectorAll('.bar-fill');
+                    bars.forEach(bar => {
+                        setTimeout(() => {
+                            bar.style.width = bar.getAttribute('data-width');
+                        }, 200);
+                    });
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        // Observe chart container
+        const chartContainer = document.querySelector('.chart-container');
+        if (chartContainer) {
+            observer.observe(chartContainer);
+        }
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add scroll animations to cards
+        const cards = document.querySelectorAll('.team-card, .stat-card, .benefit-card');
+        const cardObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.style.animation = 'fadeIn 0.8s ease forwards';
+                    }, index * 100);
+                    cardObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        cards.forEach(card => {
+            card.style.opacity = '0';
+            cardObserver.observe(card);
+        });
+    </script>
+</body>
+</html>
