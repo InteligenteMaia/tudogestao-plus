@@ -120,6 +120,9 @@ class AuthController {
         data: {
           name: companyName,
           cnpj,
+          email: email,
+          phone: '0000000000',
+          address: {},
           active: true,
         }
       });
@@ -136,16 +139,14 @@ class AuthController {
         }
       });
 
-      // Cria categorias padrão
+      // Cria categorias padrão de produtos
       await tx.category.createMany({
         data: [
-          { companyId: company.id, name: 'Vendas', type: 'INCOME', color: '#34C759' },
-          { companyId: company.id, name: 'Serviços', type: 'INCOME', color: '#0071E3' },
-          { companyId: company.id, name: 'Fornecedores', type: 'EXPENSE', color: '#FF3B30' },
-          { companyId: company.id, name: 'Salários', type: 'EXPENSE', color: '#FF9500' },
-          { companyId: company.id, name: 'Impostos', type: 'EXPENSE', color: '#AF52DE' },
-          { companyId: company.id, name: 'Eletrônicos', type: 'PRODUCT', color: '#0071E3' },
-          { companyId: company.id, name: 'Alimentos', type: 'PRODUCT', color: '#34C759' },
+          { name: 'Eletrônicos', description: 'Produtos eletrônicos e tecnologia' },
+          { name: 'Alimentos', description: 'Alimentos e bebidas' },
+          { name: 'Vestuário', description: 'Roupas e acessórios' },
+          { name: 'Serviços', description: 'Serviços diversos' },
+          { name: 'Outros', description: 'Outros produtos' },
         ]
       });
 
@@ -187,18 +188,17 @@ class AuthController {
         email: true,
         role: true,
         active: true,
-        avatar: true,
-        phone: true,
         createdAt: true,
-        lastLogin: true,
+        updatedAt: true,
         company: {
           select: {
             id: true,
             name: true,
+            tradeName: true,
             cnpj: true,
             email: true,
             phone: true,
-            logo: true,
+            active: true,
           }
         }
       }

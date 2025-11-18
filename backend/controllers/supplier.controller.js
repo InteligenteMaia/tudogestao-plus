@@ -4,137 +4,75 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-class SaleController {
+class SupplierController {
   async create(req, res) {
     try {
-      const { customerId, items, discount, paymentMethod, installments, notes } = req.body;
-      const { companyId } = req.user;
+      const { cpfCnpj, name, tradeName, email, phone, address } = req.body;
+      const companyId = req.companyId;
 
-      let subtotal = 0;
-      for (const item of items) {
-        const product = await prisma.product.findUnique({
-          where: { id: item.productId }
-        });
-        if (!product) {
-          return res.status(404).json({ error: `Produto ${item.productId} não encontrado` });
-        }
-        if (product.stock < item.quantity) {
-          return res.status(400).json({ error: `Estoque insuficiente para ${product.name}` });
-        }
-        subtotal += parseFloat(product.salePrice) * item.quantity;
-      }
-
-      const discountAmount = discount ? parseFloat(discount) : 0;
-      const netAmount = subtotal - discountAmount;
-
-      const lastSale = await prisma.sale.findFirst({
-        where: { companyId },
-        orderBy: { saleNumber: 'desc' }
+      // Verifica se fornecedor já existe
+      const existing = await prisma.supplier.findFirst({
+        where: { companyId, cpfCnpj }
       });
 
-      const nextNumber = lastSale ? parseInt(lastSale.saleNumber.split('-')[1]) + 1 : 1;
-      const saleNumber = `VND-${String(nextNumber).padStart(6, '0')}`;
+      if (existing) {
+        return res.status(409).json({ error: 'CPF/CNPJ já cadastrado' });
+      }
 
-      const sale = await prisma.sale.create({
+      const supplier = await prisma.supplier.create({
         data: {
           companyId,
-          customerId,
-          saleNumber,
-          date: new Date(),
-          subtotal,
-          discount: discountAmount,
-          netAmount,
-          paymentMethod,
-          installments: installments || 1,
-          status: 'PENDING',
-          notes,
-          items: {
-            create: items.map(item => ({
-              productId: item.productId,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-              total: item.quantity * item.unitPrice,
-              discount: item.discount || 0
-            }))
-          }
-        },
-        include: {
-          customer: true,
-          items: {
-            include: {
-              product: true
-            }
-          }
+          cpfCnpj,
+          name,
+          tradeName,
+          email,
+          phone,
+          address,
+          active: true
         }
       });
 
-      for (const item of items) {
-        await prisma.product.update({
-          where: { id: item.productId },
-          data: {
-            stock: {
-              decrement: item.quantity
-            }
-          }
-        });
-      }
-
-      res.status(201).json(sale);
+      res.status(201).json(supplier);
     } catch (error) {
       console.error('Erro:', error);
-      res.status(500).json({ error: 'Erro ao criar venda' });
+      res.status(500).json({ error: 'Erro ao criar fornecedor' });
     }
   }
 
   async list(req, res) {
     try {
-      const { companyId } = req.user;
-      const { page = 1, limit = 20, status, customerId, startDate, endDate } = req.query;
+      const companyId = req.companyId;
+      const { page = 1, limit = 20, search, active } = req.query;
 
       const where = {
         companyId,
-        ...(status && { status }),
-        ...(customerId && { customerId }),
-        ...(startDate && endDate && {
-          date: {
-            gte: new Date(startDate),
-            lte: new Date(endDate)
-          }
+        ...(active !== undefined && { active: active === 'true' }),
+        ...(search && {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { cpfCnpj: { contains: search } },
+            { tradeName: { contains: search, mode: 'insensitive' } }
+          ]
         })
       };
 
-      const [sales, total] = await Promise.all([
-        prisma.sale.findMany({
+      const [suppliers, total] = await Promise.all([
+        prisma.supplier.findMany({
           where,
           skip: (page - 1) * limit,
           take: parseInt(limit),
-          orderBy: { date: 'desc' },
+          orderBy: { name: 'asc' },
           include: {
-            customer: {
-              select: {
-                id: true,
-                name: true,
-                cpfCnpj: true
-              }
-            },
-            items: {
-              include: {
-                product: {
-                  select: {
-                    id: true,
-                    name: true,
-                    code: true
-                  }
-                }
-              }
+            _count: {
+              select: { products: true }
             }
           }
         }),
-        prisma.sale.count({ where })
+        prisma.supplier.count({ where })
       ]);
 
       res.json({
-        sales,
+        suppliers,
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),
@@ -144,113 +82,122 @@ class SaleController {
       });
     } catch (error) {
       console.error('Erro:', error);
-      res.status(500).json({ error: 'Erro ao listar vendas' });
+      res.status(500).json({ error: 'Erro ao listar fornecedores' });
     }
   }
 
   async getById(req, res) {
     try {
       const { id } = req.params;
-      const { companyId } = req.user;
+      const companyId = req.companyId;
 
-      const sale = await prisma.sale.findFirst({
+      const supplier = await prisma.supplier.findFirst({
         where: { id, companyId },
         include: {
-          customer: true,
-          items: {
-            include: {
-              product: true
+          products: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+              stock: true,
+              active: true
             }
           }
         }
       });
 
-      if (!sale) {
-        return res.status(404).json({ error: 'Venda não encontrada' });
+      if (!supplier) {
+        return res.status(404).json({ error: 'Fornecedor não encontrado' });
       }
 
-      res.json(sale);
+      res.json(supplier);
     } catch (error) {
       console.error('Erro:', error);
-      res.status(500).json({ error: 'Erro ao buscar venda' });
+      res.status(500).json({ error: 'Erro ao buscar fornecedor' });
     }
   }
 
   async update(req, res) {
     try {
       const { id } = req.params;
-      const { companyId } = req.user;
-      const { status, paymentMethod, notes } = req.body;
+      const companyId = req.companyId;
+      const { cpfCnpj, name, tradeName, email, phone, address, active } = req.body;
 
-      const sale = await prisma.sale.findFirst({
+      const supplier = await prisma.supplier.findFirst({
         where: { id, companyId }
       });
 
-      if (!sale) {
-        return res.status(404).json({ error: 'Venda não encontrada' });
+      if (!supplier) {
+        return res.status(404).json({ error: 'Fornecedor não encontrado' });
       }
 
-      const updated = await prisma.sale.update({
+      // Se mudou CPF/CNPJ, verifica duplicação
+      if (cpfCnpj && cpfCnpj !== supplier.cpfCnpj) {
+        const existing = await prisma.supplier.findFirst({
+          where: {
+            companyId,
+            cpfCnpj,
+            id: { not: id }
+          }
+        });
+
+        if (existing) {
+          return res.status(409).json({ error: 'CPF/CNPJ já cadastrado' });
+        }
+      }
+
+      const updated = await prisma.supplier.update({
         where: { id },
         data: {
-          ...(status && { status }),
-          ...(paymentMethod && { paymentMethod }),
-          ...(notes !== undefined && { notes })
-        },
-        include: {
-          customer: true,
-          items: {
-            include: {
-              product: true
-            }
-          }
+          ...(cpfCnpj && { cpfCnpj }),
+          ...(name && { name }),
+          ...(tradeName !== undefined && { tradeName }),
+          ...(email !== undefined && { email }),
+          ...(phone !== undefined && { phone }),
+          ...(address !== undefined && { address }),
+          ...(active !== undefined && { active })
         }
       });
 
       res.json(updated);
     } catch (error) {
       console.error('Erro:', error);
-      res.status(500).json({ error: 'Erro ao atualizar venda' });
+      res.status(500).json({ error: 'Erro ao atualizar fornecedor' });
     }
   }
 
   async delete(req, res) {
     try {
       const { id } = req.params;
-      const { companyId } = req.user;
+      const companyId = req.companyId;
 
-      const sale = await prisma.sale.findFirst({
+      const supplier = await prisma.supplier.findFirst({
         where: { id, companyId },
-        include: { items: true }
+        include: {
+          _count: {
+            select: { products: true }
+          }
+        }
       });
 
-      if (!sale) {
-        return res.status(404).json({ error: 'Venda não encontrada' });
+      if (!supplier) {
+        return res.status(404).json({ error: 'Fornecedor não encontrado' });
       }
 
-      if (sale.status === 'PAID') {
-        return res.status(400).json({ error: 'Não é possível excluir uma venda paga' });
-      }
-
-      for (const item of sale.items) {
-        await prisma.product.update({
-          where: { id: item.productId },
-          data: {
-            stock: {
-              increment: item.quantity
-            }
-          }
+      if (supplier._count.products > 0) {
+        return res.status(400).json({
+          error: 'Não é possível excluir fornecedor com produtos vinculados'
         });
       }
 
-      await prisma.sale.delete({ where: { id } });
+      await prisma.supplier.delete({ where: { id } });
 
-      res.json({ message: 'Venda excluída com sucesso' });
+      res.json({ message: 'Fornecedor excluído com sucesso' });
     } catch (error) {
       console.error('Erro:', error);
-      res.status(500).json({ error: 'Erro ao excluir venda' });
+      res.status(500).json({ error: 'Erro ao excluir fornecedor' });
     }
   }
 }
 
-module.exports = new SaleController();
+module.exports = new SupplierController();
