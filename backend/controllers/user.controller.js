@@ -168,6 +168,45 @@ class UserController {
   }
 
   /**
+   * Alterna status do usuário (ativo/inativo)
+   */
+  async toggleStatus(req, res) {
+    const { id } = req.params;
+
+    // Não pode desativar a si mesmo
+    if (id === req.userId) {
+      throw new AppError('Você não pode alterar o status da sua própria conta', 400);
+    }
+
+    const user = await prisma.user.findFirst({
+      where: { id, companyId: req.companyId }
+    });
+
+    if (!user) {
+      throw new AppError('Usuário não encontrado', 404);
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { active: !user.active },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        active: true
+      }
+    });
+
+    await auditService.log(req.userId, 'TOGGLE_STATUS', 'User', id);
+
+    res.json({
+      message: `Usuário ${updatedUser.active ? 'ativado' : 'desativado'} com sucesso`,
+      user: updatedUser
+    });
+  }
+
+  /**
    * Deleta usuário
    */
   async delete(req, res) {
@@ -194,11 +233,10 @@ class UserController {
   }
 
   /**
-   * Reseta senha do usuário
+   * Reseta senha do usuário (gera senha temporária)
    */
   async resetPassword(req, res) {
     const { id } = req.params;
-    const { newPassword } = req.body;
 
     const user = await prisma.user.findFirst({
       where: { id, companyId: req.companyId }
@@ -208,7 +246,9 @@ class UserController {
       throw new AppError('Usuário não encontrado', 404);
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    // Gera senha temporária de 8 caracteres
+    const tempPassword = Math.random().toString(36).slice(-8);
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
     await prisma.user.update({
       where: { id },
@@ -217,7 +257,10 @@ class UserController {
 
     await auditService.log(req.userId, 'RESET_PASSWORD', 'User', id);
 
-    res.json({ message: 'Senha resetada com sucesso' });
+    res.json({
+      message: `Senha resetada com sucesso. Nova senha temporária: ${tempPassword}`,
+      tempPassword
+    });
   }
 }
 

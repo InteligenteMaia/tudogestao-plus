@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaHome, FaShoppingCart, FaBox, FaUsers, FaTruck, FaMoneyBillWave, FaUserTie, FaChartBar, FaCog, FaFileInvoiceDollar } from 'react-icons/fa';
+import { FaHome, FaShoppingCart, FaBox, FaUsers, FaTruck, FaMoneyBillWave, FaUserTie, FaChartBar, FaCog, FaFileInvoiceDollar, FaUserShield } from 'react-icons/fa';
 
 export default function Sidebar({ isOpen }) {
   const location = useLocation();
@@ -13,6 +13,7 @@ export default function Sidebar({ isOpen }) {
     { path: '/suppliers', icon: FaTruck, label: 'Fornecedores' },
     { path: '/financial', icon: FaMoneyBillWave, label: 'Financeiro' },
     { path: '/employees', icon: FaUserTie, label: 'Funcionários' },
+    { path: '/users', icon: FaUserShield, label: 'Usuários' },
     { path: '/nfe', icon: FaFileInvoiceDollar, label: 'NFe' },
     { path: '/reports', icon: FaChartBar, label: 'Relatórios' },
     { path: '/settings', icon: FaCog, label: 'Configurações' },
@@ -36,9 +37,25 @@ export default function Sidebar({ isOpen }) {
         textAlign: 'center'
       }}>
         <div style={{
-          fontSize: '40px',
-          marginBottom: '10px'
-        }}>🚀</div>
+          marginBottom: '10px',
+          display: 'flex',
+          justifyContent: 'center'
+        }}>
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" rx="10" fill="url(#gradient)" />
+            <path d="M14 18C14 16.8954 14.8954 16 16 16H32C33.1046 16 34 16.8954 34 18V30C34 31.1046 33.1046 32 32 32H16C14.8954 32 14 31.1046 14 30V18Z" fill="white" />
+            <path d="M18 20H30" stroke="#667eea" strokeWidth="2" strokeLinecap="round" />
+            <path d="M18 24H26" stroke="#667eea" strokeWidth="2" strokeLinecap="round" />
+            <path d="M18 28H28" stroke="#667eea" strokeWidth="2" strokeLinecap="round" />
+            <circle cx="32" cy="16" r="4" fill="#10b981" stroke="white" strokeWidth="2" />
+            <defs>
+              <linearGradient id="gradient" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#667eea" />
+                <stop offset="1" stopColor="#764ba2" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
         <h1 style={{
           fontSize: '24px',
           fontWeight: 'bold',
