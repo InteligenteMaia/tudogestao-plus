@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
+    "seed": "node scripts/seed-demo-data.js",
     "db:setup": "node scripts/setup-database.js",
     "db:seed": "node scripts/seed-demo-data.js",
     "db:backup": "node scripts/backup-scheduler.js",
