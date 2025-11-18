@@ -1,34 +1,110 @@
-import React, { useState } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaUserTie } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaUserTie, FaTimes } from 'react-icons/fa';
+import api from '../../services/api';
+import toast from 'react-hot-toast';
 
 export default function Employees() {
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState(null);
+  const [formData, setFormData] = useState({
+    cpf: '',
+    name: '',
+    email: '',
+    phone: '',
+    position: '',
+    department: '',
+    salary: '',
+    admissionDate: '',
+    address: {}
+  });
 
-  // Dados mockados
-  const employees = [
-    {
-      id: '1',
-      name: 'Carlos Silva',
-      cpf: '123.456.789-00',
-      email: 'carlos@demostore.com',
-      position: 'Gerente de Vendas',
-      department: 'Comercial',
-      admissionDate: '2023-01-15',
-      salary: 5500.00,
-      active: true
-    },
-    {
-      id: '2',
-      name: 'Ana Santos',
-      cpf: '987.654.321-00',
-      email: 'ana@demostore.com',
-      position: 'Assistente Administrativo',
-      department: 'Administrativo',
-      admissionDate: '2023-06-20',
-      salary: 3200.00,
-      active: true
+  useEffect(() => {
+    loadEmployees();
+  }, []);
+
+  const loadEmployees = async () => {
+    try {
+      const response = await api.get('/employees');
+      setEmployees(response.data.employees || []);
+      setLoading(false);
+    } catch (error) {
+      console.error('Erro ao carregar funcionários:', error);
+      toast.error('Erro ao carregar funcionários');
+      setEmployees([]);
+      setLoading(false);
     }
-  ];
+  };
+
+  const handleOpenModal = (employee = null) => {
+    if (employee) {
+      setEditingEmployee(employee);
+      setFormData({
+        cpf: employee.cpf,
+        name: employee.name,
+        email: employee.email || '',
+        phone: employee.phone || '',
+        position: employee.position,
+        department: employee.department || '',
+        salary: employee.salary.toString(),
+        admissionDate: employee.admissionDate.split('T')[0],
+        address: employee.address || {}
+      });
+    } else {
+      setEditingEmployee(null);
+      setFormData({
+        cpf: '',
+        name: '',
+        email: '',
+        phone: '',
+        position: '',
+        department: '',
+        salary: '',
+        admissionDate: new Date().toISOString().split('T')[0],
+        address: {}
+      });
+    }
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingEmployee(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingEmployee) {
+        await api.put(`/employees/${editingEmployee.id}`, formData);
+        toast.success('Funcionário atualizado com sucesso!');
+      } else {
+        await api.post('/employees', formData);
+        toast.success('Funcionário criado com sucesso!');
+      }
+      handleCloseModal();
+      loadEmployees();
+    } catch (error) {
+      console.error('Erro ao salvar funcionário:', error);
+      toast.error(error.response?.data?.error || 'Erro ao salvar funcionário');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Tem certeza que deseja excluir este funcionário?')) {
+      return;
+    }
+    try {
+      await api.delete(`/employees/${id}`);
+      toast.success('Funcionário excluído com sucesso!');
+      loadEmployees();
+    } catch (error) {
+      console.error('Erro ao excluir funcionário:', error);
+      toast.error(error.response?.data?.error || 'Erro ao excluir funcionário');
+    }
+  };
 
   const filteredEmployees = employees.filter(e =>
     e.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -40,6 +116,14 @@ export default function Employees() {
     .filter(e => e.active)
     .reduce((sum, e) => sum + parseFloat(e.salary || 0), 0);
 
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+        <div style={{ fontSize: '24px', color: '#667eea' }}>Carregando...</div>
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* Header */}
@@ -47,19 +131,21 @@ export default function Employees() {
         <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#333', margin: 0 }}>
           Funcionários
         </h1>
-        <button style={{
-          padding: '12px 24px',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '14px',
-          fontWeight: '600',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
+        <button
+          onClick={() => handleOpenModal()}
+          style={{
+            padding: '12px 24px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '14px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
           <FaPlus /> Novo Funcionário
         </button>
       </div>
@@ -150,7 +236,7 @@ export default function Employees() {
           <div>
             <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>Salário Médio</p>
             <h3 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', color: '#f59e0b' }}>
-              R$ {employees.length > 0 ? (totalSalary / employees.filter(e => e.active).length).toFixed(2) : '0.00'}
+              R$ {employees.filter(e => e.active).length > 0 ? (totalSalary / employees.filter(e => e.active).length).toFixed(2) : '0.00'}
             </h3>
           </div>
         </div>
@@ -252,24 +338,28 @@ export default function Employees() {
                   </td>
                   <td style={{ padding: '15px', textAlign: 'center' }}>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                      <button style={{
-                        padding: '8px',
-                        background: '#eff6ff',
-                        border: 'none',
-                        borderRadius: '6px',
-                        color: '#2563eb',
-                        cursor: 'pointer'
-                      }}>
+                      <button
+                        onClick={() => handleOpenModal(employee)}
+                        style={{
+                          padding: '8px',
+                          background: '#eff6ff',
+                          border: 'none',
+                          borderRadius: '6px',
+                          color: '#2563eb',
+                          cursor: 'pointer'
+                        }}>
                         <FaEdit />
                       </button>
-                      <button style={{
-                        padding: '8px',
-                        background: '#fef2f2',
-                        border: 'none',
-                        borderRadius: '6px',
-                        color: '#dc2626',
-                        cursor: 'pointer'
-                      }}>
+                      <button
+                        onClick={() => handleDelete(employee.id)}
+                        style={{
+                          padding: '8px',
+                          background: '#fef2f2',
+                          border: 'none',
+                          borderRadius: '6px',
+                          color: '#dc2626',
+                          cursor: 'pointer'
+                        }}>
                         <FaTrash />
                       </button>
                     </div>
@@ -280,6 +370,237 @@ export default function Employees() {
           </table>
         )}
       </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '30px',
+            width: '90%',
+            maxWidth: '600px',
+            maxHeight: '90vh',
+            overflow: 'auto'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#333' }}>
+                {editingEmployee ? 'Editar Funcionário' : 'Novo Funcionário'}
+              </h2>
+              <button onClick={handleCloseModal} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '20px' }}>
+                <FaTimes />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#333' }}>
+                    Nome Completo *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '2px solid #e5e5e5',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#333' }}>
+                    CPF *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.cpf}
+                    onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '2px solid #e5e5e5',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#333' }}>
+                    Telefone
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '2px solid #e5e5e5',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#333' }}>
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '2px solid #e5e5e5',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#333' }}>
+                    Cargo *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.position}
+                    onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '2px solid #e5e5e5',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#333' }}>
+                    Departamento
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.department}
+                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '2px solid #e5e5e5',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#333' }}>
+                    Salário *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    step="0.01"
+                    value={formData.salary}
+                    onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '2px solid #e5e5e5',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#333' }}>
+                    Data de Admissão *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={formData.admissionDate}
+                    onChange={(e) => setFormData({ ...formData, admissionDate: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '2px solid #e5e5e5',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  style={{
+                    padding: '12px 24px',
+                    background: '#f3f4f6',
+                    color: '#374151',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    padding: '12px 24px',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {editingEmployee ? 'Salvar' : 'Criar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
