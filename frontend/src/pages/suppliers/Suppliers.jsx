@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaTimes } from 'react-icons/fa';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -7,6 +7,16 @@ export default function Suppliers() {
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [editingSupplier, setEditingSupplier] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    tradeName: '',
+    cpfCnpj: '',
+    email: '',
+    phone: '',
+    address: {}
+  });
 
   useEffect(() => {
     loadSuppliers();
@@ -25,6 +35,68 @@ export default function Suppliers() {
     }
   };
 
+  const handleOpenModal = (supplier = null) => {
+    if (supplier) {
+      setEditingSupplier(supplier);
+      setFormData({
+        name: supplier.name,
+        tradeName: supplier.tradeName || '',
+        cpfCnpj: supplier.cpfCnpj,
+        email: supplier.email || '',
+        phone: supplier.phone || '',
+        address: supplier.address || {}
+      });
+    } else {
+      setEditingSupplier(null);
+      setFormData({
+        name: '',
+        tradeName: '',
+        cpfCnpj: '',
+        email: '',
+        phone: '',
+        address: {}
+      });
+    }
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingSupplier(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingSupplier) {
+        await api.put(`/suppliers/${editingSupplier.id}`, formData);
+        toast.success('Fornecedor atualizado com sucesso!');
+      } else {
+        await api.post('/suppliers', formData);
+        toast.success('Fornecedor criado com sucesso!');
+      }
+      handleCloseModal();
+      loadSuppliers();
+    } catch (error) {
+      console.error('Erro ao salvar fornecedor:', error);
+      toast.error(error.response?.data?.error || 'Erro ao salvar fornecedor');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Tem certeza que deseja excluir este fornecedor?')) {
+      return;
+    }
+    try {
+      await api.delete(`/suppliers/${id}`);
+      toast.success('Fornecedor excluído com sucesso!');
+      loadSuppliers();
+    } catch (error) {
+      console.error('Erro ao excluir fornecedor:', error);
+      toast.error(error.response?.data?.error || 'Erro ao excluir fornecedor');
+    }
+  };
+
   const filteredSuppliers = suppliers.filter(s =>
     s.name?.toLowerCase().includes(search.toLowerCase()) ||
     s.cpfCnpj?.includes(search) ||
@@ -37,19 +109,21 @@ export default function Suppliers() {
         <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#333', margin: 0 }}>
           Fornecedores
         </h1>
-        <button style={{
-          padding: '12px 24px',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '14px',
-          fontWeight: '600',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
+        <button
+          onClick={() => handleOpenModal()}
+          style={{
+            padding: '12px 24px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '14px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
           <FaPlus /> Novo Fornecedor
         </button>
       </div>
@@ -145,24 +219,28 @@ export default function Suppliers() {
                   </td>
                   <td style={{ padding: '15px', textAlign: 'center' }}>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                      <button style={{
-                        padding: '8px',
-                        background: '#eff6ff',
-                        border: 'none',
-                        borderRadius: '6px',
-                        color: '#2563eb',
-                        cursor: 'pointer'
-                      }}>
+                      <button
+                        onClick={() => handleOpenModal(supplier)}
+                        style={{
+                          padding: '8px',
+                          background: '#eff6ff',
+                          border: 'none',
+                          borderRadius: '6px',
+                          color: '#2563eb',
+                          cursor: 'pointer'
+                        }}>
                         <FaEdit />
                       </button>
-                      <button style={{
-                        padding: '8px',
-                        background: '#fef2f2',
-                        border: 'none',
-                        borderRadius: '6px',
-                        color: '#dc2626',
-                        cursor: 'pointer'
-                      }}>
+                      <button
+                        onClick={() => handleDelete(supplier.id)}
+                        style={{
+                          padding: '8px',
+                          background: '#fef2f2',
+                          border: 'none',
+                          borderRadius: '6px',
+                          color: '#dc2626',
+                          cursor: 'pointer'
+                        }}>
                         <FaTrash />
                       </button>
                     </div>
@@ -173,6 +251,174 @@ export default function Suppliers() {
           </table>
         )}
       </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '30px',
+            width: '90%',
+            maxWidth: '600px',
+            maxHeight: '90vh',
+            overflow: 'auto'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#333' }}>
+                {editingSupplier ? 'Editar Fornecedor' : 'Novo Fornecedor'}
+              </h2>
+              <button onClick={handleCloseModal} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '20px' }}>
+                <FaTimes />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit}>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#333' }}>
+                  Nome *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #e5e5e5',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#333' }}>
+                  Nome Fantasia
+                </label>
+                <input
+                  type="text"
+                  value={formData.tradeName}
+                  onChange={(e) => setFormData({ ...formData, tradeName: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #e5e5e5',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#333' }}>
+                  CNPJ *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.cpfCnpj}
+                  onChange={(e) => setFormData({ ...formData, cpfCnpj: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #e5e5e5',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#333' }}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #e5e5e5',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#333' }}>
+                  Telefone
+                </label>
+                <input
+                  type="text"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '2px solid #e5e5e5',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  style={{
+                    padding: '12px 24px',
+                    background: '#f3f4f6',
+                    color: '#374151',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    padding: '12px 24px',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {editingSupplier ? 'Salvar' : 'Criar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
