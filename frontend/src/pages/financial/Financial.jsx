@@ -1,19 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { FaArrowUp, FaArrowDown, FaMoneyBillWave, FaClock } from 'react-icons/fa';
+import api from '../../services/api';
+import toast from 'react-hot-toast';
 
 export default function Financial() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [receivables, setReceivables] = useState([]);
+  const [payables, setPayables] = useState([]);
 
-  // Dados mockados até ter as rotas corretas
-  const receivables = [
-    { id: 1, description: 'Venda #001 - João Silva', amount: 1500.00, dueDate: '2024-11-01', status: 'PENDING' },
-    { id: 2, description: 'Venda #002 - Maria Santos', amount: 2300.00, dueDate: '2024-11-05', status: 'PENDING' }
-  ];
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const payables = [
-    { id: 1, description: 'Fornecedor XYZ', amount: 800.00, dueDate: '2024-10-28', status: 'PENDING' },
-    { id: 2, description: 'Aluguel', amount: 2000.00, dueDate: '2024-11-01', status: 'PENDING' }
-  ];
+  const loadData = async () => {
+    try {
+      setLoading(true);
+
+      const [receivablesRes, payablesRes] = await Promise.all([
+        api.get('/financial/receivables', { params: { status: 'PENDING', limit: 50 } }),
+        api.get('/financial/payables', { params: { status: 'PENDING', limit: 50 } })
+      ]);
+
+      setReceivables(receivablesRes.data.receivables || []);
+      setPayables(payablesRes.data.payables || []);
+      setLoading(false);
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+      toast.error('Erro ao carregar dados financeiros');
+      setLoading(false);
+    }
+  };
 
   const totalReceivables = receivables
     .filter(r => r.status === 'PENDING')
@@ -24,6 +40,14 @@ export default function Financial() {
     .reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
 
   const balance = totalReceivables - totalPayables;
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+        <div style={{ fontSize: '24px', color: '#667eea' }}>Carregando...</div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -140,31 +164,37 @@ export default function Financial() {
         <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px', color: '#333' }}>
           Contas a Receber
         </h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {receivables.filter(r => r.status === 'PENDING').map(item => (
-            <div key={item.id} style={{
-              padding: '15px',
-              background: '#f9fafb',
-              borderRadius: '8px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <div>
-                <p style={{ margin: 0, fontWeight: '500', color: '#333' }}>{item.description}</p>
-                <p style={{ margin: '5px 0 0 0', fontSize: '13px', color: '#666' }}>
-                  <FaClock style={{ marginRight: '5px' }} />
-                  Vencimento: {new Date(item.dueDate).toLocaleDateString('pt-BR')}
-                </p>
+        {receivables.filter(r => r.status === 'PENDING').length === 0 ? (
+          <p style={{ color: '#666', textAlign: 'center', padding: '20px' }}>
+            Nenhuma conta a receber pendente
+          </p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {receivables.filter(r => r.status === 'PENDING').map(item => (
+              <div key={item.id} style={{
+                padding: '15px',
+                background: '#f9fafb',
+                borderRadius: '8px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div>
+                  <p style={{ margin: 0, fontWeight: '500', color: '#333' }}>{item.description}</p>
+                  <p style={{ margin: '5px 0 0 0', fontSize: '13px', color: '#666' }}>
+                    <FaClock style={{ marginRight: '5px' }} />
+                    Vencimento: {new Date(item.dueDate).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#10b981' }}>
+                    R$ {parseFloat(item.amount).toFixed(2)}
+                  </p>
+                </div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#10b981' }}>
-                  R$ {parseFloat(item.amount).toFixed(2)}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Contas a Pagar */}
@@ -177,31 +207,37 @@ export default function Financial() {
         <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px', color: '#333' }}>
           Contas a Pagar
         </h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {payables.filter(p => p.status === 'PENDING').map(item => (
-            <div key={item.id} style={{
-              padding: '15px',
-              background: '#f9fafb',
-              borderRadius: '8px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <div>
-                <p style={{ margin: 0, fontWeight: '500', color: '#333' }}>{item.description}</p>
-                <p style={{ margin: '5px 0 0 0', fontSize: '13px', color: '#666' }}>
-                  <FaClock style={{ marginRight: '5px' }} />
-                  Vencimento: {new Date(item.dueDate).toLocaleDateString('pt-BR')}
-                </p>
+        {payables.filter(p => p.status === 'PENDING').length === 0 ? (
+          <p style={{ color: '#666', textAlign: 'center', padding: '20px' }}>
+            Nenhuma conta a pagar pendente
+          </p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {payables.filter(p => p.status === 'PENDING').map(item => (
+              <div key={item.id} style={{
+                padding: '15px',
+                background: '#f9fafb',
+                borderRadius: '8px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div>
+                  <p style={{ margin: 0, fontWeight: '500', color: '#333' }}>{item.description}</p>
+                  <p style={{ margin: '5px 0 0 0', fontSize: '13px', color: '#666' }}>
+                    <FaClock style={{ marginRight: '5px' }} />
+                    Vencimento: {new Date(item.dueDate).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#ef4444' }}>
+                    R$ {parseFloat(item.amount).toFixed(2)}
+                  </p>
+                </div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#ef4444' }}>
-                  R$ {parseFloat(item.amount).toFixed(2)}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -31,8 +31,8 @@ export default function Customers() {
     c.email?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const pfCustomers = customers.filter(c => c.type === 'PF').length;
-  const pjCustomers = customers.filter(c => c.type === 'PJ').length;
+  const pfCustomers = customers.filter(c => c.type === 'INDIVIDUAL').length;
+  const pjCustomers = customers.filter(c => c.type === 'COMPANY').length;
 
   return (
     <div>
@@ -163,7 +163,7 @@ export default function Customers() {
               {filteredCustomers.map((customer) => (
                 <tr key={customer.id} style={{ borderBottom: '1px solid #e5e5e5' }}>
                   <td style={{ padding: '15px', fontSize: '14px', color: '#333' }}>
-                    {customer.type === 'PF' ? <FaUser style={{ color: '#667eea' }} /> : <FaBuilding style={{ color: '#10b981' }} />}
+                    {customer.type === 'INDIVIDUAL' ? <FaUser style={{ color: '#667eea' }} /> : <FaBuilding style={{ color: '#10b981' }} />}
                   </td>
                   <td style={{ padding: '15px', fontSize: '14px', color: '#333', fontWeight: '500' }}>
                     {customer.name}

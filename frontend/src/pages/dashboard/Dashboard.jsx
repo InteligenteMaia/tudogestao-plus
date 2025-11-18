@@ -18,12 +18,20 @@ export default function Dashboard() {
 
   const loadData = async () => {
     try {
-      // Dados mockados - substitua por chamadas reais da API
+      // Carrega estatísticas de vendas
+      const salesResponse = await api.get('/sales/stats');
+
+      // Carrega contagem de clientes
+      const customersResponse = await api.get('/customers', { params: { limit: 1 } });
+
+      // Carrega contagem de produtos
+      const productsResponse = await api.get('/products', { params: { limit: 1 } });
+
       setStats({
-        salesTotal: 12450.00,
-        salesCount: 3,
-        customersCount: 3,
-        productsCount: 5
+        salesTotal: salesResponse.data.totalRevenue || 0,
+        salesCount: salesResponse.data.totalSales || 0,
+        customersCount: customersResponse.data.pagination?.total || 0,
+        productsCount: productsResponse.data.pagination?.total || 0
       });
       setLoading(false);
     } catch (error) {
