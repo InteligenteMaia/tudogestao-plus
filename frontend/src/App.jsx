@@ -14,6 +14,7 @@ import Employees from './pages/employees/Employees';
 import Reports from './pages/reports/Reports';
 import NFe from './pages/nfe/NFe';
 import Settings from './pages/settings/Settings';
+import Users from './pages/users/Users';
 import './App.css';
 
 // Protected Route Component
@@ -121,6 +122,14 @@ function AppRoutes() {
         <ProtectedRoute>
           <Layout>
             <Employees />
+          </Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/users" element={
+        <ProtectedRoute>
+          <Layout>
+            <Users />
           </Layout>
         </ProtectedRoute>
       } />

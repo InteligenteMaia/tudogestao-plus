@@ -28,14 +28,9 @@ router.post('/',
 );
 
 router.put('/:id', asyncHandler(userController.update.bind(userController)));
+router.put('/:id/toggle-status', asyncHandler(userController.toggleStatus.bind(userController)));
 router.delete('/:id', asyncHandler(userController.delete.bind(userController)));
 
-router.post('/:id/reset-password',
-  [
-    body('newPassword').isLength({ min: 6 }).withMessage('Senha deve ter no mínimo 6 caracteres'),
-    validate
-  ],
-  asyncHandler(userController.resetPassword.bind(userController))
-);
+router.put('/:id/reset-password', asyncHandler(userController.resetPassword.bind(userController)));
 
 module.exports = router;
