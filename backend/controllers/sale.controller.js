@@ -4,10 +4,10 @@ const prisma = new PrismaClient();
 class SaleController {
   async create(req, res) {
     try {
-      const { customerId, items, discount, paymentMethod, installments, notes } = req.body;
-      const { companyId } = req.user;
+      const { customerId, items, discount, paymentMethod, observations } = req.body;
+      const companyId = req.companyId;
 
-      let subtotal = 0;
+      let totalAmount = 0;
       for (const item of items) {
         const product = await prisma.product.findUnique({
           where: { id: item.productId }
@@ -18,11 +18,11 @@ class SaleController {
         if (product.stock < item.quantity) {
           return res.status(400).json({ error: `Estoque insuficiente para ${product.name}` });
         }
-        subtotal += parseFloat(product.salePrice) * item.quantity;
+        totalAmount += parseFloat(product.salePrice) * item.quantity;
       }
 
       const discountAmount = discount ? parseFloat(discount) : 0;
-      const netAmount = subtotal - discountAmount;
+      const netAmount = totalAmount - discountAmount;
 
       const lastSale = await prisma.sale.findFirst({
         where: { companyId },
@@ -38,13 +38,12 @@ class SaleController {
           customerId,
           saleNumber,
           date: new Date(),
-          subtotal,
+          totalAmount,
           discount: discountAmount,
           netAmount,
           paymentMethod,
-          installments: installments || 1,
           status: 'PENDING',
-          notes,
+          observations,
           items: {
             create: items.map(item => ({
               productId: item.productId,
@@ -85,7 +84,7 @@ class SaleController {
 
   async list(req, res) {
     try {
-      const { companyId } = req.user;
+      const companyId = req.companyId;
       const { page = 1, limit = 20, status, customerId, startDate, endDate } = req.query;
 
       const where = {
@@ -148,7 +147,7 @@ class SaleController {
   async getById(req, res) {
     try {
       const { id } = req.params;
-      const { companyId } = req.user;
+      const companyId = req.companyId;
 
       const sale = await prisma.sale.findFirst({
         where: { id, companyId },
@@ -176,8 +175,8 @@ class SaleController {
   async update(req, res) {
     try {
       const { id } = req.params;
-      const { companyId } = req.user;
-      const { status, paymentMethod, notes } = req.body;
+      const companyId = req.companyId;
+      const { status, paymentMethod, observations } = req.body;
 
       const sale = await prisma.sale.findFirst({
         where: { id, companyId }
@@ -192,7 +191,7 @@ class SaleController {
         data: {
           ...(status && { status }),
           ...(paymentMethod && { paymentMethod }),
-          ...(notes !== undefined && { notes })
+          ...(observations !== undefined && { observations })
         },
         include: {
           customer: true,
@@ -215,7 +214,7 @@ class SaleController {
     try {
       const { id } = req.params;
       const { status } = req.body;
-      const { companyId } = req.user;
+      const companyId = req.companyId;
 
       const sale = await prisma.sale.findFirst({
         where: { id, companyId }
@@ -248,7 +247,7 @@ class SaleController {
   async cancel(req, res) {
     try {
       const { id } = req.params;
-      const { companyId } = req.user;
+      const companyId = req.companyId;
 
       const sale = await prisma.sale.findFirst({
         where: { id, companyId },
@@ -297,7 +296,7 @@ class SaleController {
   async delete(req, res) {
     try {
       const { id } = req.params;
-      const { companyId } = req.user;
+      const companyId = req.companyId;
 
       const sale = await prisma.sale.findFirst({
         where: { id, companyId },
@@ -334,7 +333,7 @@ class SaleController {
 
   async stats(req, res) {
     try {
-      const { companyId } = req.user;
+      const companyId = req.companyId;
       const { startDate, endDate } = req.query;
 
       const where = {

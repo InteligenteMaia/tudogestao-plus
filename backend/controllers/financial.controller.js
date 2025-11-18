@@ -11,15 +11,11 @@ const prisma = new PrismaClient();
 class FinancialController {
   // ========== CONTAS A PAGAR ==========
 
-  /**
-   * Lista contas a pagar
-   */
   async listPayables(req, res) {
     const { page = 1, limit = 20, status, startDate, endDate } = req.query;
     const skip = (page - 1) * limit;
 
     const where = {
-      companyId: req.companyId,
       ...(status && { status }),
       ...(startDate && endDate && {
         dueDate: {
@@ -34,15 +30,7 @@ class FinancialController {
         where,
         skip,
         take: parseInt(limit),
-        orderBy: { dueDate: 'asc' },
-        include: {
-          supplier: {
-            select: { id: true, name: true }
-          },
-          category: {
-            select: { id: true, name: true, color: true }
-          }
-        }
+        orderBy: { dueDate: 'asc' }
       }),
       prisma.accountPayable.count({ where })
     ]);
@@ -58,24 +46,21 @@ class FinancialController {
     });
   }
 
-  /**
-   * Cria conta a pagar
-   */
   async createPayable(req, res) {
-    const data = {
-      ...req.body,
-      companyId: req.companyId,
-    };
+    const { supplierId, description, amount, dueDate, observations } = req.body;
 
     const payable = await prisma.accountPayable.create({
-      data,
-      include: {
-        supplier: true,
-        category: true
+      data: {
+        supplierId,
+        description,
+        amount: parseFloat(amount),
+        dueDate: new Date(dueDate),
+        observations,
+        status: 'PENDING'
       }
     });
 
-    await auditService.log(req.userId, 'CREATE', 'AccountPayable', payable.id, data);
+    await auditService.log(req.userId, 'CREATE', 'AccountPayable', payable.id, req.body);
 
     res.status(201).json({
       message: 'Conta a pagar criada com sucesso',
@@ -83,15 +68,12 @@ class FinancialController {
     });
   }
 
-  /**
-   * Atualiza conta a pagar
-   */
   async updatePayable(req, res) {
     const { id } = req.params;
-    const data = req.body;
+    const { description, amount, dueDate, observations, status } = req.body;
 
-    const existing = await prisma.accountPayable.findFirst({
-      where: { id, companyId: req.companyId }
+    const existing = await prisma.accountPayable.findUnique({
+      where: { id }
     });
 
     if (!existing) {
@@ -100,14 +82,16 @@ class FinancialController {
 
     const payable = await prisma.accountPayable.update({
       where: { id },
-      data,
-      include: {
-        supplier: true,
-        category: true
+      data: {
+        ...(description && { description }),
+        ...(amount && { amount: parseFloat(amount) }),
+        ...(dueDate && { dueDate: new Date(dueDate) }),
+        ...(observations !== undefined && { observations }),
+        ...(status && { status })
       }
     });
 
-    await auditService.log(req.userId, 'UPDATE', 'AccountPayable', id, data);
+    await auditService.log(req.userId, 'UPDATE', 'AccountPayable', id, req.body);
 
     res.json({
       message: 'Conta atualizada com sucesso',
@@ -115,15 +99,12 @@ class FinancialController {
     });
   }
 
-  /**
-   * Registra pagamento
-   */
   async payPayable(req, res) {
     const { id } = req.params;
-    const { paymentDate, paymentMethod, fine, interest, bankAccountId } = req.body;
+    const { paymentDate } = req.body;
 
-    const payable = await prisma.accountPayable.findFirst({
-      where: { id, companyId: req.companyId }
+    const payable = await prisma.accountPayable.findUnique({
+      where: { id }
     });
 
     if (!payable) {
@@ -134,66 +115,27 @@ class FinancialController {
       throw new AppError('Conta já foi paga', 400);
     }
 
-    const totalAmount = parseFloat(payable.amount) + (fine || 0) + (interest || 0);
-
-    // Atualiza em transação
-    await prisma.$transaction(async (tx) => {
-      // Atualiza conta
-      await tx.accountPayable.update({
-        where: { id },
-        data: {
-          status: 'PAID',
-          paymentDate: new Date(paymentDate),
-          paymentMethod,
-          fine,
-          interest
-        }
-      });
-
-      // Registra transação
-      await tx.transaction.create({
-        data: {
-          companyId: req.companyId,
-          bankAccountId,
-          categoryId: payable.categoryId,
-          type: 'EXPENSE',
-          description: payable.description,
-          amount: totalAmount,
-          date: new Date(paymentDate),
-          paymentMethod,
-          document: payable.document
-        }
-      });
-
-      // Atualiza saldo da conta bancária
-      if (bankAccountId) {
-        await tx.bankAccount.update({
-          where: { id: bankAccountId },
-          data: {
-            currentBalance: {
-              decrement: totalAmount
-            }
-          }
-        });
+    const updated = await prisma.accountPayable.update({
+      where: { id },
+      data: {
+        status: 'PAID',
+        paymentDate: new Date(paymentDate)
       }
     });
 
-    await auditService.log(req.userId, 'PAY', 'AccountPayable', id, { 
-      totalAmount, 
-      paymentDate 
-    });
+    await auditService.log(req.userId, 'PAY', 'AccountPayable', id, { paymentDate });
 
-    res.json({ message: 'Pagamento registrado com sucesso' });
+    res.json({
+      message: 'Pagamento registrado com sucesso',
+      payable: updated
+    });
   }
 
-  /**
-   * Deleta conta a pagar
-   */
   async deletePayable(req, res) {
     const { id } = req.params;
 
-    const payable = await prisma.accountPayable.findFirst({
-      where: { id, companyId: req.companyId }
+    const payable = await prisma.accountPayable.findUnique({
+      where: { id }
     });
 
     if (!payable) {
@@ -213,15 +155,11 @@ class FinancialController {
 
   // ========== CONTAS A RECEBER ==========
 
-  /**
-   * Lista contas a receber
-   */
   async listReceivables(req, res) {
     const { page = 1, limit = 20, status, startDate, endDate } = req.query;
     const skip = (page - 1) * limit;
 
     const where = {
-      companyId: req.companyId,
       ...(status && { status }),
       ...(startDate && endDate && {
         dueDate: {
@@ -236,18 +174,7 @@ class FinancialController {
         where,
         skip,
         take: parseInt(limit),
-        orderBy: { dueDate: 'asc' },
-        include: {
-          customer: {
-            select: { id: true, name: true }
-          },
-          sale: {
-            select: { id: true, saleNumber: true }
-          },
-          category: {
-            select: { id: true, name: true, color: true }
-          }
-        }
+        orderBy: { dueDate: 'asc' }
       }),
       prisma.accountReceivable.count({ where })
     ]);
@@ -263,24 +190,22 @@ class FinancialController {
     });
   }
 
-  /**
-   * Cria conta a receber
-   */
   async createReceivable(req, res) {
-    const data = {
-      ...req.body,
-      companyId: req.companyId,
-    };
+    const { customerId, saleId, description, amount, dueDate, observations } = req.body;
 
     const receivable = await prisma.accountReceivable.create({
-      data,
-      include: {
-        customer: true,
-        category: true
+      data: {
+        customerId,
+        saleId,
+        description,
+        amount: parseFloat(amount),
+        dueDate: new Date(dueDate),
+        observations,
+        status: 'PENDING'
       }
     });
 
-    await auditService.log(req.userId, 'CREATE', 'AccountReceivable', receivable.id, data);
+    await auditService.log(req.userId, 'CREATE', 'AccountReceivable', receivable.id, req.body);
 
     res.status(201).json({
       message: 'Conta a receber criada com sucesso',
@@ -288,15 +213,12 @@ class FinancialController {
     });
   }
 
-  /**
-   * Atualiza conta a receber
-   */
   async updateReceivable(req, res) {
     const { id } = req.params;
-    const data = req.body;
+    const { description, amount, dueDate, observations, status } = req.body;
 
-    const existing = await prisma.accountReceivable.findFirst({
-      where: { id, companyId: req.companyId }
+    const existing = await prisma.accountReceivable.findUnique({
+      where: { id }
     });
 
     if (!existing) {
@@ -305,14 +227,16 @@ class FinancialController {
 
     const receivable = await prisma.accountReceivable.update({
       where: { id },
-      data,
-      include: {
-        customer: true,
-        category: true
+      data: {
+        ...(description && { description }),
+        ...(amount && { amount: parseFloat(amount) }),
+        ...(dueDate && { dueDate: new Date(dueDate) }),
+        ...(observations !== undefined && { observations }),
+        ...(status && { status })
       }
     });
 
-    await auditService.log(req.userId, 'UPDATE', 'AccountReceivable', id, data);
+    await auditService.log(req.userId, 'UPDATE', 'AccountReceivable', id, req.body);
 
     res.json({
       message: 'Conta atualizada com sucesso',
@@ -320,15 +244,12 @@ class FinancialController {
     });
   }
 
-  /**
-   * Registra recebimento
-   */
   async receiveReceivable(req, res) {
     const { id } = req.params;
-    const { paymentDate, paymentMethod, discount, fine, interest, bankAccountId } = req.body;
+    const { paymentDate } = req.body;
 
-    const receivable = await prisma.accountReceivable.findFirst({
-      where: { id, companyId: req.companyId }
+    const receivable = await prisma.accountReceivable.findUnique({
+      where: { id }
     });
 
     if (!receivable) {
@@ -339,89 +260,45 @@ class FinancialController {
       throw new AppError('Conta já foi recebida', 400);
     }
 
-    const totalAmount = parseFloat(receivable.amount) 
-      - (discount || 0) 
-      + (fine || 0) 
-      + (interest || 0);
-
-    // Atualiza em transação
-    await prisma.$transaction(async (tx) => {
-      // Atualiza conta
-      await tx.accountReceivable.update({
-        where: { id },
-        data: {
-          status: 'PAID',
-          paymentDate: new Date(paymentDate),
-          paymentMethod,
-          discount,
-          fine,
-          interest
-        }
-      });
-
-      // Registra transação
-      await tx.transaction.create({
-        data: {
-          companyId: req.companyId,
-          bankAccountId,
-          categoryId: receivable.categoryId,
-          type: 'INCOME',
-          description: receivable.description,
-          amount: totalAmount,
-          date: new Date(paymentDate),
-          paymentMethod,
-          document: receivable.document
-        }
-      });
-
-      // Atualiza saldo da conta bancária
-      if (bankAccountId) {
-        await tx.bankAccount.update({
-          where: { id: bankAccountId },
-          data: {
-            currentBalance: {
-              increment: totalAmount
-            }
-          }
-        });
+    const updated = await prisma.accountReceivable.update({
+      where: { id },
+      data: {
+        status: 'PAID',
+        paymentDate: new Date(paymentDate)
       }
+    });
 
-      // Atualiza venda se vinculada
-      if (receivable.saleId) {
-        const sale = await tx.sale.findUnique({
+    // Atualiza venda se vinculada
+    if (receivable.saleId) {
+      const allReceivables = await prisma.accountReceivable.findMany({
+        where: { saleId: receivable.saleId }
+      });
+
+      const allPaid = allReceivables.every(r =>
+        r.id === id || r.status === 'PAID'
+      );
+
+      if (allPaid) {
+        await prisma.sale.update({
           where: { id: receivable.saleId },
-          include: { receivables: true }
+          data: { status: 'PAID' }
         });
-
-        const allPaid = sale.receivables.every(r => 
-          r.id === id || r.status === 'PAID'
-        );
-
-        if (allPaid) {
-          await tx.sale.update({
-            where: { id: receivable.saleId },
-            data: { status: 'PAID' }
-          });
-        }
       }
-    });
+    }
 
-    await auditService.log(req.userId, 'RECEIVE', 'AccountReceivable', id, { 
-      totalAmount, 
-      paymentDate 
-    });
+    await auditService.log(req.userId, 'RECEIVE', 'AccountReceivable', id, { paymentDate });
 
-    res.json({ message: 'Recebimento registrado com sucesso' });
+    res.json({
+      message: 'Recebimento registrado com sucesso',
+      receivable: updated
+    });
   }
 
-  /**
-   * Deleta conta a receber
-   */
   async deleteReceivable(req, res) {
     const { id } = req.params;
 
-    const receivable = await prisma.accountReceivable.findFirst({
-      where: { id, companyId: req.companyId }
+    const receivable = await prisma.accountReceivable.findUnique({
+      where: { id }
     });
 
     if (!receivable) {
@@ -441,17 +318,12 @@ class FinancialController {
 
   // ========== TRANSAÇÕES ==========
 
-  /**
-   * Lista transações
-   */
   async listTransactions(req, res) {
-    const { page = 1, limit = 50, type, startDate, endDate, bankAccountId } = req.query;
+    const { page = 1, limit = 50, type, startDate, endDate } = req.query;
     const skip = (page - 1) * limit;
 
     const where = {
-      companyId: req.companyId,
       ...(type && { type }),
-      ...(bankAccountId && { bankAccountId }),
       ...(startDate && endDate && {
         date: {
           gte: new Date(startDate),
@@ -461,21 +333,13 @@ class FinancialController {
     };
 
     const [transactions, total] = await Promise.all([
-      prisma.transaction.findMany({
+      prisma.financialTransaction.findMany({
         where,
         skip,
         take: parseInt(limit),
-        orderBy: { date: 'desc' },
-        include: {
-          category: {
-            select: { id: true, name: true, color: true }
-          },
-          bankAccount: {
-            select: { id: true, bankName: true, account: true }
-          }
-        }
+        orderBy: { date: 'desc' }
       }),
-      prisma.transaction.count({ where })
+      prisma.financialTransaction.count({ where })
     ]);
 
     res.json({
@@ -489,40 +353,22 @@ class FinancialController {
     });
   }
 
-  /**
-   * Cria transação manual
-   */
   async createTransaction(req, res) {
-    const data = {
-      ...req.body,
-      companyId: req.companyId,
-    };
+    const { type, category, description, amount, date, bankAccount, observations } = req.body;
 
-    const transaction = await prisma.$transaction(async (tx) => {
-      const newTransaction = await tx.transaction.create({
-        data,
-        include: {
-          category: true,
-          bankAccount: true
-        }
-      });
-
-      // Atualiza saldo da conta bancária
-      if (data.bankAccountId) {
-        await tx.bankAccount.update({
-          where: { id: data.bankAccountId },
-          data: {
-            currentBalance: {
-              [data.type === 'INCOME' ? 'increment' : 'decrement']: data.amount
-            }
-          }
-        });
+    const transaction = await prisma.financialTransaction.create({
+      data: {
+        type,
+        category,
+        description,
+        amount: parseFloat(amount),
+        date: date ? new Date(date) : new Date(),
+        bankAccount,
+        observations
       }
-
-      return newTransaction;
     });
 
-    await auditService.log(req.userId, 'CREATE', 'Transaction', transaction.id, data);
+    await auditService.log(req.userId, 'CREATE', 'FinancialTransaction', transaction.id, req.body);
 
     res.status(201).json({
       message: 'Transação criada com sucesso',
@@ -530,74 +376,6 @@ class FinancialController {
     });
   }
 
-  /**
-   * Fluxo de caixa
-   */
-  async cashFlow(req, res) {
-    const { startDate, endDate } = req.query;
-
-    const where = {
-      companyId: req.companyId,
-      date: {
-        gte: new Date(startDate),
-        lte: new Date(endDate)
-      }
-    };
-
-    const transactions = await prisma.transaction.findMany({
-      where,
-      orderBy: { date: 'asc' },
-      select: {
-        date: true,
-        type: true,
-        amount: true,
-        description: true,
-        category: {
-          select: { name: true, color: true }
-        }
-      }
-    });
-
-    // Agrupa por dia
-    const cashFlow = transactions.reduce((acc, trans) => {
-      const date = trans.date.toISOString().split('T')[0];
-      
-      if (!acc[date]) {
-        acc[date] = {
-          date,
-          income: 0,
-          expense: 0,
-          balance: 0,
-          transactions: []
-        };
-      }
-
-      if (trans.type === 'INCOME') {
-        acc[date].income += parseFloat(trans.amount);
-      } else {
-        acc[date].expense += parseFloat(trans.amount);
-      }
-
-      acc[date].transactions.push(trans);
-
-      return acc;
-    }, {});
-
-    // Calcula saldo acumulado
-    let accumulatedBalance = 0;
-    const cashFlowArray = Object.values(cashFlow).map(day => {
-      day.balance = day.income - day.expense;
-      accumulatedBalance += day.balance;
-      day.accumulatedBalance = accumulatedBalance;
-      return day;
-    });
-
-    res.json({ cashFlow: cashFlowArray });
-  }
-
-  /**
-   * Dashboard financeiro
-   */
   async dashboard(req, res) {
     const { startDate, endDate } = req.query;
 
@@ -612,13 +390,11 @@ class FinancialController {
       pendingReceivables,
       pendingPayables,
       overdueReceivables,
-      overduePayables,
-      bankAccounts
+      overduePayables
     ] = await Promise.all([
       // Total receitas
-      prisma.transaction.aggregate({
+      prisma.financialTransaction.aggregate({
         where: {
-          companyId: req.companyId,
           type: 'INCOME',
           ...(dateFilter && { date: dateFilter })
         },
@@ -626,9 +402,8 @@ class FinancialController {
       }),
 
       // Total despesas
-      prisma.transaction.aggregate({
+      prisma.financialTransaction.aggregate({
         where: {
-          companyId: req.companyId,
           type: 'EXPENSE',
           ...(dateFilter && { date: dateFilter })
         },
@@ -637,20 +412,14 @@ class FinancialController {
 
       // Contas a receber pendentes
       prisma.accountReceivable.aggregate({
-        where: {
-          companyId: req.companyId,
-          status: 'PENDING'
-        },
+        where: { status: 'PENDING' },
         _sum: { amount: true },
         _count: true
       }),
 
       // Contas a pagar pendentes
       prisma.accountPayable.aggregate({
-        where: {
-          companyId: req.companyId,
-          status: 'PENDING'
-        },
+        where: { status: 'PENDING' },
         _sum: { amount: true },
         _count: true
       }),
@@ -658,7 +427,6 @@ class FinancialController {
       // Contas a receber vencidas
       prisma.accountReceivable.aggregate({
         where: {
-          companyId: req.companyId,
           status: 'PENDING',
           dueDate: { lt: new Date() }
         },
@@ -669,39 +437,18 @@ class FinancialController {
       // Contas a pagar vencidas
       prisma.accountPayable.aggregate({
         where: {
-          companyId: req.companyId,
           status: 'PENDING',
           dueDate: { lt: new Date() }
         },
         _sum: { amount: true },
         _count: true
-      }),
-
-      // Saldos das contas bancárias
-      prisma.bankAccount.findMany({
-        where: {
-          companyId: req.companyId,
-          active: true
-        },
-        select: {
-          id: true,
-          bankName: true,
-          account: true,
-          currentBalance: true
-        }
       })
     ]);
-
-    const totalBalance = bankAccounts.reduce(
-      (sum, acc) => sum + parseFloat(acc.currentBalance),
-      0
-    );
 
     res.json({
       income: totalIncome._sum.amount || 0,
       expense: totalExpense._sum.amount || 0,
       balance: (totalIncome._sum.amount || 0) - (totalExpense._sum.amount || 0),
-      totalBalance,
       receivables: {
         pending: {
           amount: pendingReceivables._sum.amount || 0,
@@ -721,8 +468,7 @@ class FinancialController {
           amount: overduePayables._sum.amount || 0,
           count: overduePayables._count
         }
-      },
-      bankAccounts
+      }
     });
   }
 }

@@ -3,45 +3,49 @@
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const bcrypt = require('bcryptjs');
 
 class EmployeeController {
   async create(req, res) {
     try {
-      const { name, email, password, cpf, phone, role, salary, address } = req.body;
-      const { companyId } = req.user;
+      const {
+        cpf,
+        name,
+        email,
+        phone,
+        position,
+        department,
+        salary,
+        admissionDate,
+        address
+      } = req.body;
+      const companyId = req.companyId;
 
-      // Verificar se email já existe
-      const existingEmployee = await prisma.employee.findFirst({
-        where: { email, companyId }
+      // Verificar se CPF já existe
+      const existingEmployee = await prisma.employee.findUnique({
+        where: { cpf }
       });
 
       if (existingEmployee) {
-        return res.status(400).json({ error: 'Email já cadastrado' });
+        return res.status(409).json({ error: 'CPF já cadastrado' });
       }
-
-      // Hash da senha
-      const hashedPassword = await bcrypt.hash(password, 10);
 
       const employee = await prisma.employee.create({
         data: {
           companyId,
+          cpf,
           name,
           email,
-          password: hashedPassword,
-          cpf,
           phone,
-          role,
+          position,
+          department,
           salary: parseFloat(salary),
+          admissionDate: new Date(admissionDate),
           address,
           active: true
         }
       });
 
-      // Remover senha da resposta
-      const { password: _, ...employeeWithoutPassword } = employee;
-
-      res.status(201).json(employeeWithoutPassword);
+      res.status(201).json(employee);
     } catch (error) {
       console.error('Erro:', error);
       res.status(500).json({ error: 'Erro ao criar funcionário' });
@@ -50,19 +54,20 @@ class EmployeeController {
 
   async list(req, res) {
     try {
-      const { companyId } = req.user;
-      const { page = 1, limit = 20, search, role } = req.query;
+      const companyId = req.companyId;
+      const { page = 1, limit = 20, search, position, active } = req.query;
 
       const where = {
         companyId,
+        ...(active !== undefined && { active: active === 'true' }),
         ...(search && {
           OR: [
             { name: { contains: search, mode: 'insensitive' } },
-            { email: { contains: search, mode: 'insensitive' } },
-            { cpf: { contains: search } }
+            { cpf: { contains: search } },
+            { position: { contains: search, mode: 'insensitive' } }
           ]
         }),
-        ...(role && { role })
+        ...(position && { position })
       };
 
       const [employees, total] = await Promise.all([
@@ -73,12 +78,14 @@ class EmployeeController {
           orderBy: { name: 'asc' },
           select: {
             id: true,
+            cpf: true,
             name: true,
             email: true,
-            cpf: true,
             phone: true,
-            role: true,
+            position: true,
+            department: true,
             salary: true,
+            admissionDate: true,
             active: true,
             createdAt: true
           }
@@ -104,21 +111,15 @@ class EmployeeController {
   async getById(req, res) {
     try {
       const { id } = req.params;
-      const { companyId } = req.user;
+      const companyId = req.companyId;
 
       const employee = await prisma.employee.findFirst({
         where: { id, companyId },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          cpf: true,
-          phone: true,
-          role: true,
-          salary: true,
-          address: true,
-          active: true,
-          createdAt: true
+        include: {
+          payrolls: {
+            orderBy: { referenceMonth: 'desc' },
+            take: 6
+          }
         }
       });
 
@@ -136,8 +137,20 @@ class EmployeeController {
   async update(req, res) {
     try {
       const { id } = req.params;
-      const { companyId } = req.user;
-      const updateData = req.body;
+      const companyId = req.companyId;
+      const {
+        cpf,
+        name,
+        email,
+        phone,
+        position,
+        department,
+        salary,
+        admissionDate,
+        dismissalDate,
+        address,
+        active
+      } = req.body;
 
       const employee = await prisma.employee.findFirst({
         where: { id, companyId }
@@ -147,30 +160,33 @@ class EmployeeController {
         return res.status(404).json({ error: 'Funcionário não encontrado' });
       }
 
-      // Se está atualizando senha, fazer hash
-      if (updateData.password) {
-        updateData.password = await bcrypt.hash(updateData.password, 10);
-      }
+      // Se mudou CPF, verifica duplicação
+      if (cpf && cpf !== employee.cpf) {
+        const existing = await prisma.employee.findUnique({
+          where: { cpf }
+        });
 
-      // Se está atualizando salário, converter para float
-      if (updateData.salary) {
-        updateData.salary = parseFloat(updateData.salary);
+        if (existing) {
+          return res.status(409).json({ error: 'CPF já cadastrado' });
+        }
       }
 
       const updated = await prisma.employee.update({
         where: { id },
-        data: updateData,
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          cpf: true,
-          phone: true,
-          role: true,
-          salary: true,
-          address: true,
-          active: true,
-          createdAt: true
+        data: {
+          ...(cpf && { cpf }),
+          ...(name && { name }),
+          ...(email !== undefined && { email }),
+          ...(phone !== undefined && { phone }),
+          ...(position && { position }),
+          ...(department !== undefined && { department }),
+          ...(salary && { salary: parseFloat(salary) }),
+          ...(admissionDate && { admissionDate: new Date(admissionDate) }),
+          ...(dismissalDate !== undefined && {
+            dismissalDate: dismissalDate ? new Date(dismissalDate) : null
+          }),
+          ...(address !== undefined && { address }),
+          ...(active !== undefined && { active })
         }
       });
 
@@ -184,7 +200,41 @@ class EmployeeController {
   async delete(req, res) {
     try {
       const { id } = req.params;
-      const { companyId } = req.user;
+      const companyId = req.companyId;
+
+      const employee = await prisma.employee.findFirst({
+        where: { id, companyId },
+        include: {
+          _count: {
+            select: { payrolls: true }
+          }
+        }
+      });
+
+      if (!employee) {
+        return res.status(404).json({ error: 'Funcionário não encontrado' });
+      }
+
+      if (employee._count.payrolls > 0) {
+        return res.status(400).json({
+          error: 'Não é possível excluir funcionário com folhas de pagamento vinculadas'
+        });
+      }
+
+      await prisma.employee.delete({ where: { id } });
+
+      res.json({ message: 'Funcionário excluído com sucesso' });
+    } catch (error) {
+      console.error('Erro:', error);
+      res.status(500).json({ error: 'Erro ao excluir funcionário' });
+    }
+  }
+
+  async dismiss(req, res) {
+    try {
+      const { id } = req.params;
+      const { dismissalDate } = req.body;
+      const companyId = req.companyId;
 
       const employee = await prisma.employee.findFirst({
         where: { id, companyId }
@@ -194,12 +244,22 @@ class EmployeeController {
         return res.status(404).json({ error: 'Funcionário não encontrado' });
       }
 
-      await prisma.employee.delete({ where: { id } });
+      if (employee.dismissalDate) {
+        return res.status(400).json({ error: 'Funcionário já foi demitido' });
+      }
 
-      res.json({ message: 'Funcionário excluído com sucesso' });
+      const updated = await prisma.employee.update({
+        where: { id },
+        data: {
+          dismissalDate: new Date(dismissalDate),
+          active: false
+        }
+      });
+
+      res.json(updated);
     } catch (error) {
       console.error('Erro:', error);
-      res.status(500).json({ error: 'Erro ao excluir funcionário' });
+      res.status(500).json({ error: 'Erro ao demitir funcionário' });
     }
   }
 }

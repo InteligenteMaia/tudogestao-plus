@@ -26,10 +26,9 @@ class ReportController {
     };
 
     // Receitas
-    const revenues = await prisma.transaction.groupBy({
-      by: ['categoryId'],
+    const revenues = await prisma.financialTransaction.groupBy({
+      by: ['category'],
       where: {
-        companyId: req.companyId,
         type: 'INCOME',
         date: dateFilter
       },
@@ -37,35 +36,23 @@ class ReportController {
     });
 
     // Despesas
-    const expenses = await prisma.transaction.groupBy({
-      by: ['categoryId'],
+    const expenses = await prisma.financialTransaction.groupBy({
+      by: ['category'],
       where: {
-        companyId: req.companyId,
         type: 'EXPENSE',
         date: dateFilter
       },
       _sum: { amount: true }
     });
 
-    // Busca categorias
-    const categoryIds = [
-      ...revenues.map(r => r.categoryId),
-      ...expenses.map(e => e.categoryId)
-    ].filter(id => id);
-
-    const categories = await prisma.category.findMany({
-      where: { id: { in: categoryIds } },
-      select: { id: true, name: true, type: true }
-    });
-
     // Monta relatório
     const revenuesWithNames = revenues.map(r => ({
-      category: categories.find(c => c.id === r.categoryId)?.name || 'Sem categoria',
+      category: r.category || 'Sem categoria',
       amount: r._sum.amount || 0
     }));
 
     const expensesWithNames = expenses.map(e => ({
-      category: categories.find(c => c.id === e.categoryId)?.name || 'Sem categoria',
+      category: e.category || 'Sem categoria',
       amount: e._sum.amount || 0
     }));
 
@@ -107,9 +94,6 @@ class ReportController {
       include: {
         customer: {
           select: { name: true }
-        },
-        user: {
-          select: { name: true }
         }
       }
     });
@@ -118,8 +102,6 @@ class ReportController {
     let groupedSales;
     if (groupBy === 'customer') {
       groupedSales = groupByCustomer(sales);
-    } else if (groupBy === 'user') {
-      groupedSales = groupByUser(sales);
     } else {
       groupedSales = groupByDate(sales, groupBy);
     }
@@ -139,7 +121,6 @@ class ReportController {
         saleNumber: s.saleNumber,
         date: s.date,
         customer: s.customer.name,
-        user: s.user.name,
         amount: s.netAmount,
         status: s.status
       }))
@@ -190,13 +171,13 @@ class ReportController {
       lowStockCount,
       products: products.map(p => ({
         id: p.id,
-        sku: p.sku,
+        code: p.code,
         name: p.name,
         category: p.category?.name,
         supplier: p.supplier?.name,
         stock: p.stock,
         minStock: p.minStock,
-        unitPrice: p.unitPrice,
+        salePrice: p.salePrice,
         costPrice: p.costPrice,
         stockValue: parseFloat(p.costPrice || 0) * p.stock,
         status: p.stock <= (p.minStock || 0) ? 'LOW' : 'OK'
@@ -368,22 +349,6 @@ function groupByCustomer(sales) {
     }
     acc[customerId].count++;
     acc[customerId].total += parseFloat(sale.netAmount);
-    return acc;
-  }, {});
-}
-
-function groupByUser(sales) {
-  return sales.reduce((acc, sale) => {
-    const userId = sale.userId;
-    if (!acc[userId]) {
-      acc[userId] = {
-        user: sale.user.name,
-        count: 0,
-        total: 0
-      };
-    }
-    acc[userId].count++;
-    acc[userId].total += parseFloat(sale.netAmount);
     return acc;
   }, {});
 }
