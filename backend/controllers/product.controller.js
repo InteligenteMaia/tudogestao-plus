@@ -10,11 +10,10 @@ class ProductController {
   async create(req, res) {
     try {
       const { code, name, description, categoryId, supplierId, costPrice, salePrice, stock, minStock, barcode, unit } = req.body;
-      const { companyId } = req.user;
 
       const product = await prisma.product.create({
         data: {
-          companyId,
+          companyId: req.companyId,
           code,
           name,
           description,
@@ -42,11 +41,10 @@ class ProductController {
 
   async list(req, res) {
     try {
-      const { companyId } = req.user;
       const { page = 1, limit = 50, search, categoryId } = req.query;
 
       const where = {
-        companyId,
+        companyId: req.companyId,
         ...(search && {
           OR: [
             { name: { contains: search, mode: 'insensitive' } },
@@ -98,10 +96,9 @@ class ProductController {
   async getById(req, res) {
     try {
       const { id } = req.params;
-      const { companyId } = req.user;
 
       const product = await prisma.product.findFirst({
-        where: { id, companyId },
+        where: { id, companyId: req.companyId },
         include: {
           category: true,
           supplier: true
@@ -122,11 +119,10 @@ class ProductController {
   async update(req, res) {
     try {
       const { id } = req.params;
-      const { companyId } = req.user;
-      const updateData = req.body;
+      const { code, name, description, categoryId, supplierId, costPrice, salePrice, stock, minStock, barcode, unit } = req.body;
 
       const product = await prisma.product.findFirst({
-        where: { id, companyId }
+        where: { id, companyId: req.companyId }
       });
 
       if (!product) {
@@ -136,11 +132,17 @@ class ProductController {
       const updated = await prisma.product.update({
         where: { id },
         data: {
-          ...updateData,
-          ...(updateData.costPrice && { costPrice: parseFloat(updateData.costPrice) }),
-          ...(updateData.salePrice && { salePrice: parseFloat(updateData.salePrice) }),
-          ...(updateData.stock !== undefined && { stock: parseInt(updateData.stock) }),
-          ...(updateData.minStock !== undefined && { minStock: parseInt(updateData.minStock) })
+          code,
+          name,
+          description,
+          categoryId,
+          supplierId,
+          costPrice: parseFloat(costPrice),
+          salePrice: parseFloat(salePrice),
+          stock: parseInt(stock),
+          minStock: parseInt(minStock) || 0,
+          barcode,
+          unit
         },
         include: {
           category: true,
@@ -158,10 +160,9 @@ class ProductController {
   async delete(req, res) {
     try {
       const { id } = req.params;
-      const { companyId } = req.user;
 
       const product = await prisma.product.findFirst({
-        where: { id, companyId }
+        where: { id, companyId: req.companyId }
       });
 
       if (!product) {
@@ -181,10 +182,9 @@ class ProductController {
     try {
       const { id } = req.params;
       const { quantity, type } = req.body;
-      const { companyId } = req.user;
 
       const product = await prisma.product.findFirst({
-        where: { id, companyId }
+        where: { id, companyId: req.companyId }
       });
 
       if (!product) {
@@ -194,7 +194,7 @@ class ProductController {
       const updated = await prisma.product.update({
         where: { id },
         data: {
-          stock: type === 'add' 
+          stock: type === 'add'
             ? { increment: parseInt(quantity) }
             : { decrement: parseInt(quantity) }
         }
@@ -211,10 +211,9 @@ class ProductController {
     try {
       const { id } = req.params;
       const { adjustment, reason } = req.body;
-      const { companyId } = req.user;
 
       const product = await prisma.product.findFirst({
-        where: { id, companyId }
+        where: { id, companyId: req.companyId }
       });
 
       if (!product) {
@@ -247,11 +246,9 @@ class ProductController {
 
   async lowStock(req, res) {
     try {
-      const { companyId } = req.user;
-
       const products = await prisma.product.findMany({
         where: {
-          companyId,
+          companyId: req.companyId,
           stock: {
             lte: prisma.product.fields.minStock
           }
