@@ -23,10 +23,8 @@ class UserController {
         email: true,
         role: true,
         active: true,
-        phone: true,
-        avatar: true,
         createdAt: true,
-        lastLogin: true
+        updatedAt: true
       },
       orderBy: { name: 'asc' }
     });
@@ -41,9 +39,9 @@ class UserController {
     const { id } = req.params;
 
     const user = await prisma.user.findFirst({
-      where: { 
+      where: {
         id,
-        companyId: req.companyId 
+        companyId: req.companyId
       },
       select: {
         id: true,
@@ -51,10 +49,8 @@ class UserController {
         email: true,
         role: true,
         active: true,
-        phone: true,
-        avatar: true,
         createdAt: true,
-        lastLogin: true
+        updatedAt: true
       }
     });
 
@@ -69,7 +65,7 @@ class UserController {
    * Cria usuário
    */
   async create(req, res) {
-    const { name, email, password, role, phone } = req.body;
+    const { name, email, password, role } = req.body;
 
     // Verifica se email já existe
     const existing = await prisma.user.findUnique({
@@ -89,7 +85,6 @@ class UserController {
         email,
         password: hashedPassword,
         role,
-        phone,
         companyId: req.companyId,
         active: true
       },
@@ -116,7 +111,7 @@ class UserController {
    */
   async update(req, res) {
     const { id } = req.params;
-    const { name, email, role, phone, active } = req.body;
+    const { name, email, role, active } = req.body;
 
     const existing = await prisma.user.findFirst({
       where: { id, companyId: req.companyId }
@@ -146,7 +141,6 @@ class UserController {
         name,
         email,
         role,
-        phone,
         active
       },
       select: {
@@ -154,8 +148,7 @@ class UserController {
         name: true,
         email: true,
         role: true,
-        active: true,
-        phone: true
+        active: true
       }
     });
 
