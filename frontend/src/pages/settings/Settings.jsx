@@ -78,7 +78,7 @@ export default function Settings() {
       if (user.companyId) {
         try {
           const companyResponse = await api.get(`/companies/${user.companyId}`);
-          const company = companyResponse.data.company;
+          const company = companyResponse.data;
 
           setCompanyData({
             name: company.name || '',
