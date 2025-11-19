@@ -97,16 +97,13 @@ class CustomerController {
    * Cria um novo cliente
    */
   async create(req, res) {
-    const data = {
-      ...req.body,
-      companyId: req.companyId,
-    };
+    const { type, cpfCnpj, name, tradeName, email, phone, address } = req.body;
 
     // Verifica se CPF/CNPJ já existe
     const existing = await prisma.customer.findFirst({
       where: {
         companyId: req.companyId,
-        cpfCnpj: data.cpfCnpj
+        cpfCnpj
       }
     });
 
@@ -115,11 +112,21 @@ class CustomerController {
     }
 
     const customer = await prisma.customer.create({
-      data
+      data: {
+        type,
+        cpfCnpj,
+        name,
+        tradeName,
+        email,
+        phone,
+        address,
+        companyId: req.companyId,
+        active: true
+      }
     });
 
     // Log de auditoria
-    await auditService.log(req.userId, 'CREATE', 'Customer', customer.id, data);
+    await auditService.log(req.userId, 'CREATE', 'Customer', customer.id, req.body);
 
     res.status(201).json({
       message: 'Cliente criado com sucesso',
@@ -132,7 +139,7 @@ class CustomerController {
    */
   async update(req, res) {
     const { id } = req.params;
-    const data = req.body;
+    const { type, cpfCnpj, name, tradeName, email, phone, address } = req.body;
 
     // Verifica se existe
     const existing = await prisma.customer.findFirst({
@@ -144,11 +151,11 @@ class CustomerController {
     }
 
     // Verifica se CPF/CNPJ já existe em outro cliente
-    if (data.cpfCnpj && data.cpfCnpj !== existing.cpfCnpj) {
+    if (cpfCnpj && cpfCnpj !== existing.cpfCnpj) {
       const duplicate = await prisma.customer.findFirst({
         where: {
           companyId: req.companyId,
-          cpfCnpj: data.cpfCnpj,
+          cpfCnpj,
           id: { not: id }
         }
       });
@@ -160,11 +167,19 @@ class CustomerController {
 
     const customer = await prisma.customer.update({
       where: { id },
-      data
+      data: {
+        type,
+        cpfCnpj,
+        name,
+        tradeName,
+        email,
+        phone,
+        address
+      }
     });
 
     // Log de auditoria
-    await auditService.log(req.userId, 'UPDATE', 'Customer', id, data);
+    await auditService.log(req.userId, 'UPDATE', 'Customer', id, req.body);
 
     res.json({
       message: 'Cliente atualizado com sucesso',
