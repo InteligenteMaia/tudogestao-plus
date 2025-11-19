@@ -49,7 +49,7 @@ O arquivo `.env` já existe em `backend/.env`. Verifique se está assim:
 
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/tudogestao?schema=public"
-PORT=3001
+PORT=3333
 NODE_ENV=development
 JWT_SECRET=tudogestao_secret_key_dev_2024
 JWT_EXPIRES_IN=7d
@@ -61,6 +61,7 @@ ENCRYPTION_KEY=tudogestao_encryption_key_32chars_min
 - Usuário diferente de `postgres`? Troque o primeiro `postgres`
 - Senha diferente de `postgres`? Troque o segundo `postgres`
 - Porta diferente de `5432`? Troque `5432`
+- A porta padrão do backend é `3333` (não 3001)
 
 ---
 
@@ -110,7 +111,7 @@ cd backend
 npm run dev
 ```
 
-Você deve ver: `🚀 Server running on port 3001`
+Você deve ver: `🚀 Server running on port 3333`
 
 **Terminal 2 - Frontend:**
 ```bash
@@ -141,8 +142,52 @@ Após fazer login, você deve conseguir:
 - ✅ Acessar **Clientes**, **Fornecedores**, **Funcionários**
 - ✅ Acessar **Usuários** e gerenciar usuários do sistema
 - ✅ Acessar **Configurações** e editar dados da empresa
-- ✅ Acessar **Relatórios** e gerar relatórios
+- ✅ Acessar **Relatórios** e gerar relatórios formatados profissionalmente
+- ✅ Acessar **NFe** e emitir notas fiscais com DANFE imprimível
 - ✅ Ver o **logo SVG** na sidebar (não mais o emoji 🚀)
+
+---
+
+## 🆕 Funcionalidades Recentemente Implementadas
+
+### 📄 Sistema de NFe (Nota Fiscal Eletrônica)
+- Emissão de NFe demonstrativa integrada com vendas
+- DANFE (Documento Auxiliar da Nota Fiscal) imprimível
+- Layout profissional conforme padrões fiscais
+- Histórico de notas emitidas
+- **Página:** NFe (acessível pelo menu lateral)
+
+### 📊 Relatórios Profissionais
+- Relatórios formatados em HTML (não mais JSON bruto)
+- DRE (Demonstração do Resultado do Exercício) completo
+- Relatório de vendas com filtros de período
+- Relatório de estoque com alertas de produtos baixos
+- Relatório de clientes com estatísticas
+- Exportação pronta para impressão
+- **Página:** Relatórios (acessível pelo menu lateral)
+
+### 👥 CRUD Completo de Clientes
+- Modal interativo para criar/editar clientes
+- Suporte para Pessoa Física (CPF) e Jurídica (CNPJ)
+- Validação de CPF/CNPJ duplicado
+- Campos completos de endereço
+- Histórico de compras por cliente
+- Toast notifications para todas as ações
+- **Página:** Clientes (acessível pelo menu lateral)
+
+### 🔧 Melhorias no Backend
+- Correção do Financial Controller (método cashFlow)
+- Atualização do Product Controller (uso correto de req.companyId)
+- Correção do Customer Controller (campos duplicados resolvidos)
+- Validações aprimoradas em todos os controllers
+- Audit logging funcional
+
+### 🎨 Melhorias no Frontend
+- React Hot Toast configurado e funcionando
+- Formatação profissional de todos os relatórios
+- Interface responsiva e moderna
+- Loading states em todas as requisições
+- Tratamento de erros consistente
 
 ---
 
@@ -151,15 +196,15 @@ Após fazer login, você deve conseguir:
 ### ❌ Erro: "Cannot connect to database"
 **Solução:** Verifique se o PostgreSQL está rodando e se as credenciais no `.env` estão corretas.
 
-### ❌ Erro: "Port 3001 already in use"
-**Solução:** Mate o processo que está usando a porta 3001:
+### ❌ Erro: "Port 3333 already in use"
+**Solução:** Mate o processo que está usando a porta 3333:
 ```bash
 # Windows
-netstat -ano | findstr :3001
+netstat -ano | findstr :3333
 taskkill /PID <PID> /F
 
 # Linux/Mac
-lsof -i :3001
+lsof -i :3333
 kill -9 <PID>
 ```
 
@@ -172,9 +217,10 @@ npx prisma generate
 
 ### ❌ Página em branco ou erro 404
 **Solução:**
-1. Certifique-se de que o backend está rodando na porta 3001
+1. Certifique-se de que o backend está rodando na porta 3333
 2. Verifique se o frontend está acessando `http://localhost:5173`
 3. Abra o console do navegador (F12) e veja os erros
+4. Verifique se o arquivo `frontend/src/services/api.js` aponta para `http://localhost:3333/api`
 
 ### ❌ Erro ao fazer login
 **Solução:** Execute o seed novamente:
@@ -221,6 +267,29 @@ npm run dev
 cd backend
 npm run seed
 ```
+
+---
+
+## 📚 Documentação da Equipe
+
+Cada membro da equipe tem uma documentação detalhada explicando sua parte no projeto. Ideal para estudar e entender como cada módulo foi desenvolvido!
+
+**Documentação disponível em `/docs`:**
+
+- 📄 `01-MICHAEL-TECH-LEAD.md` - Arquitetura, liderança técnica, visão geral do sistema
+- 📄 `02-RUBENS-BACKEND.md` - Controllers principais, Prisma ORM, validações
+- 📄 `03-FELIPE-FRONTEND.md` - React, componentes, integração com API
+- 📄 `04-THAYNARA-FULLSTACK.md` - Services (PDF, Excel, Audit), padrões full stack
+- 📄 `05-ELISEU-FULLSTACK.md` - Autenticação JWT, vendas, financeiro
+- 📄 `06-LARISSA-PRODUCT-MANAGER.md` - Roadmap, user stories, priorização RICE
+- 📄 `07-NAJLA-QA-DESIGNER.md` - Design system, QA, testes de usabilidade
+- 📄 `PODCAST-PRESENTATION-SCRIPT.md` - Apresentação estilo podcast do projeto
+
+**Recomendamos:**
+1. Cada membro da equipe deve ler sua própria documentação
+2. Fazer engenharia reversa no código para aprender
+3. Estudar os conceitos explicados em cada arquivo
+4. Experimentar modificar o código para entender melhor
 
 ---
 
