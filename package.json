@@ -2,6 +2,7 @@
   "name": "tudogestao-plus",
   "version": "1.0.0",
   "description": "Sistema ERP Financeiro Completo - TudoGestão+",
+  "type": "module",
   "main": "electron/main.js",
   "author": "Michael Santos <michael@tudogestao.com>",
   "license": "MIT",
