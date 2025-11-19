@@ -376,6 +376,45 @@ class FinancialController {
     });
   }
 
+  async cashFlow(req, res) {
+    const { startDate, endDate } = req.query;
+
+    const dateFilter = startDate && endDate ? {
+      date: {
+        gte: new Date(startDate),
+        lte: new Date(endDate)
+      }
+    } : {};
+
+    const transactions = await prisma.financialTransaction.findMany({
+      where: dateFilter,
+      orderBy: { date: 'asc' }
+    });
+
+    // Agrupar por data
+    const cashFlowByDate = transactions.reduce((acc, transaction) => {
+      const dateKey = transaction.date.toISOString().split('T')[0];
+
+      if (!acc[dateKey]) {
+        acc[dateKey] = { date: dateKey, income: 0, expense: 0, balance: 0 };
+      }
+
+      if (transaction.type === 'INCOME') {
+        acc[dateKey].income += Number(transaction.amount);
+      } else {
+        acc[dateKey].expense += Number(transaction.amount);
+      }
+
+      acc[dateKey].balance = acc[dateKey].income - acc[dateKey].expense;
+
+      return acc;
+    }, {});
+
+    const cashFlow = Object.values(cashFlowByDate);
+
+    res.json({ cashFlow });
+  }
+
   async dashboard(req, res) {
     const { startDate, endDate } = req.query;
 
