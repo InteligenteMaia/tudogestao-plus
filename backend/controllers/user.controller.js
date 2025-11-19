@@ -252,7 +252,48 @@ class UserController {
 
     res.json({
       message: `Senha resetada com sucesso. Nova senha temporária: ${tempPassword}`,
-      tempPassword
+      temporaryPassword: tempPassword
+    });
+  }
+
+  /**
+   * Altera a própria senha
+   */
+  async changePassword(req, res) {
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    // Verifica se está alterando a própria senha
+    if (id !== req.userId) {
+      throw new AppError('Você só pode alterar sua própria senha', 403);
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id }
+    });
+
+    if (!user) {
+      throw new AppError('Usuário não encontrado', 404);
+    }
+
+    // Verifica senha atual
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!isValidPassword) {
+      throw new AppError('Senha atual incorreta', 401);
+    }
+
+    // Hash da nova senha
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id },
+      data: { password: hashedPassword }
+    });
+
+    await auditService.log(req.userId, 'CHANGE_PASSWORD', 'User', id);
+
+    res.json({
+      message: 'Senha alterada com sucesso'
     });
   }
 }

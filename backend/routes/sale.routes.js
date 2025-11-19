@@ -29,6 +29,8 @@ router.post('/',
   asyncHandler(saleController.create.bind(saleController))
 );
 
+router.put('/:id', asyncHandler(saleController.update.bind(saleController)));
+
 router.put('/:id/status',
   [
     body('status').isIn(['PENDING', 'PAID', 'PARTIAL', 'CANCELLED']).withMessage('Status inválido'),

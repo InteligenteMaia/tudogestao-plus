@@ -11,6 +11,18 @@ const { validate } = require('../middleware/validation.middleware');
 const { asyncHandler } = require('../middleware/error.middleware');
 
 router.use(authMiddleware);
+
+// Rota para qualquer usuário alterar sua própria senha
+router.put('/:id/password',
+  [
+    body('currentPassword').notEmpty().withMessage('Senha atual obrigatória'),
+    body('newPassword').isLength({ min: 6 }).withMessage('Nova senha deve ter no mínimo 6 caracteres'),
+    validate
+  ],
+  asyncHandler(userController.changePassword.bind(userController))
+);
+
+// Rotas administrativas (apenas admins)
 router.use(isAdmin);
 
 router.get('/', asyncHandler(userController.list.bind(userController)));
@@ -21,7 +33,7 @@ router.post('/',
     body('name').notEmpty().withMessage('Nome obrigatório'),
     body('email').isEmail().withMessage('Email inválido'),
     body('password').isLength({ min: 6 }).withMessage('Senha deve ter no mínimo 6 caracteres'),
-    body('role').isIn(['ADMIN', 'MANAGER', 'SALESPERSON', 'FINANCIAL', 'USER', 'VIEWER']).withMessage('Role inválida'),
+    body('role').isIn(['ADMIN', 'MANAGER', 'SALESPERSON', 'FINANCIAL', 'USER']).withMessage('Role inválida'),
     validate
   ],
   asyncHandler(userController.create.bind(userController))

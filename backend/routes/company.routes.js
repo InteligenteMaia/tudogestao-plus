@@ -11,8 +11,9 @@ const { asyncHandler } = require('../middleware/error.middleware');
 router.use(authMiddleware);
 
 router.get('/', asyncHandler(companyController.get.bind(companyController)));
+router.get('/:id', asyncHandler(companyController.get.bind(companyController)));
 
-router.put('/',
+router.put('/:id',
   isAdmin,
   asyncHandler(companyController.update.bind(companyController))
 );
