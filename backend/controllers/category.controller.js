@@ -12,25 +12,9 @@ class CategoryController {
    * Lista todas as categorias
    */
   async list(req, res) {
-    const { type } = req.query;
-
-    const where = {
-      companyId: req.companyId,
-      ...(type && { type }),
-      active: true
-    };
-
     const categories = await prisma.category.findMany({
-      where,
-      orderBy: { name: 'asc' },
-      include: {
-        parent: {
-          select: { id: true, name: true }
-        },
-        children: {
-          select: { id: true, name: true, color: true }
-        }
-      }
+      where: { active: true },
+      orderBy: { name: 'asc' }
     });
 
     res.json({ categories });
@@ -42,15 +26,8 @@ class CategoryController {
   async getById(req, res) {
     const { id } = req.params;
 
-    const category = await prisma.category.findFirst({
-      where: { 
-        id,
-        companyId: req.companyId 
-      },
-      include: {
-        parent: true,
-        children: true
-      }
+    const category = await prisma.category.findUnique({
+      where: { id }
     });
 
     if (!category) {
@@ -64,19 +41,16 @@ class CategoryController {
    * Cria categoria
    */
   async create(req, res) {
-    const data = {
-      ...req.body,
-      companyId: req.companyId,
-    };
+    const { name, description } = req.body;
 
     const category = await prisma.category.create({
-      data,
-      include: {
-        parent: true
+      data: {
+        name,
+        description
       }
     });
 
-    await auditService.log(req.userId, 'CREATE', 'Category', category.id, data);
+    await auditService.log(req.userId, 'CREATE', 'Category', category.id, req.body);
 
     res.status(201).json({
       message: 'Categoria criada com sucesso',
@@ -89,10 +63,10 @@ class CategoryController {
    */
   async update(req, res) {
     const { id } = req.params;
-    const data = req.body;
+    const { name, description } = req.body;
 
-    const existing = await prisma.category.findFirst({
-      where: { id, companyId: req.companyId }
+    const existing = await prisma.category.findUnique({
+      where: { id }
     });
 
     if (!existing) {
@@ -101,13 +75,13 @@ class CategoryController {
 
     const category = await prisma.category.update({
       where: { id },
-      data,
-      include: {
-        parent: true
+      data: {
+        name,
+        description
       }
     });
 
-    await auditService.log(req.userId, 'UPDATE', 'Category', id, data);
+    await auditService.log(req.userId, 'UPDATE', 'Category', id, req.body);
 
     res.json({
       message: 'Categoria atualizada com sucesso',
@@ -121,19 +95,12 @@ class CategoryController {
   async delete(req, res) {
     const { id } = req.params;
 
-    const category = await prisma.category.findFirst({
-      where: { id, companyId: req.companyId },
-      include: {
-        children: true
-      }
+    const category = await prisma.category.findUnique({
+      where: { id }
     });
 
     if (!category) {
       throw new AppError('Categoria não encontrada', 404);
-    }
-
-    if (category.children.length > 0) {
-      throw new AppError('Não é possível excluir categoria com subcategorias', 400);
     }
 
     await prisma.category.delete({ where: { id } });

@@ -23,10 +23,8 @@ class UserController {
         email: true,
         role: true,
         active: true,
-        phone: true,
-        avatar: true,
         createdAt: true,
-        lastLogin: true
+        updatedAt: true
       },
       orderBy: { name: 'asc' }
     });
@@ -41,9 +39,9 @@ class UserController {
     const { id } = req.params;
 
     const user = await prisma.user.findFirst({
-      where: { 
+      where: {
         id,
-        companyId: req.companyId 
+        companyId: req.companyId
       },
       select: {
         id: true,
@@ -51,10 +49,8 @@ class UserController {
         email: true,
         role: true,
         active: true,
-        phone: true,
-        avatar: true,
         createdAt: true,
-        lastLogin: true
+        updatedAt: true
       }
     });
 
@@ -69,7 +65,7 @@ class UserController {
    * Cria usuário
    */
   async create(req, res) {
-    const { name, email, password, role, phone } = req.body;
+    const { name, email, password, role } = req.body;
 
     // Verifica se email já existe
     const existing = await prisma.user.findUnique({
@@ -89,7 +85,6 @@ class UserController {
         email,
         password: hashedPassword,
         role,
-        phone,
         companyId: req.companyId,
         active: true
       },
@@ -116,7 +111,7 @@ class UserController {
    */
   async update(req, res) {
     const { id } = req.params;
-    const { name, email, role, phone, active } = req.body;
+    const { name, email, role, active } = req.body;
 
     const existing = await prisma.user.findFirst({
       where: { id, companyId: req.companyId }
@@ -146,7 +141,6 @@ class UserController {
         name,
         email,
         role,
-        phone,
         active
       },
       select: {
@@ -154,8 +148,7 @@ class UserController {
         name: true,
         email: true,
         role: true,
-        active: true,
-        phone: true
+        active: true
       }
     });
 
@@ -259,7 +252,48 @@ class UserController {
 
     res.json({
       message: `Senha resetada com sucesso. Nova senha temporária: ${tempPassword}`,
-      tempPassword
+      temporaryPassword: tempPassword
+    });
+  }
+
+  /**
+   * Altera a própria senha
+   */
+  async changePassword(req, res) {
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    // Verifica se está alterando a própria senha
+    if (id !== req.userId) {
+      throw new AppError('Você só pode alterar sua própria senha', 403);
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id }
+    });
+
+    if (!user) {
+      throw new AppError('Usuário não encontrado', 404);
+    }
+
+    // Verifica senha atual
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!isValidPassword) {
+      throw new AppError('Senha atual incorreta', 401);
+    }
+
+    // Hash da nova senha
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id },
+      data: { password: hashedPassword }
+    });
+
+    await auditService.log(req.userId, 'CHANGE_PASSWORD', 'User', id);
+
+    res.json({
+      message: 'Senha alterada com sucesso'
     });
   }
 }
