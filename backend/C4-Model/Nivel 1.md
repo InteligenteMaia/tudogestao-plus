@@ -3,7 +3,6 @@
 **Descrição curta**  
 Este diagrama de contexto mostra as interações entre os atores externos e o sistema TudoGestão+ (ERP) na arquitetura de microsserviços. Indica usuários, frontend, API Gateway, microsserviços principais e integrações externas (SEFAZ-SP, bancos, e-mail).
 
-> **Observação:** copie exatamente o bloco `mermaid` abaixo (incluindo ```mermaid) e cole em um arquivo `.md`. O GitHub renderiza automaticamente.
 ```mermaid
 graph LR
     U[Usuario Final] -->|Acessa via navegador| FE[Frontend Streamlit]
