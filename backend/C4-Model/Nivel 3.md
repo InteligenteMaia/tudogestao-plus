@@ -1,3 +1,7 @@
+Diagrama de Componentes
+
+Este diagrama detalha a estrutura interna do Serviço Financeiro, apresentando seus componentes principais, como rotas da API, camada de serviços, repositórios, modelos de dados, schemas e integrações externas. Ele permite visualizar claramente como as responsabilidades estão organizadas dentro do microsserviço.
+
 ```mermaid
 flowchart TB
 
