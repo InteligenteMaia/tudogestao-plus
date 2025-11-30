@@ -1,4 +1,6 @@
-Diagrama de Contêineres
+# C4 — Nível 1: Diagrama de Contêiners
+
+**Descrição curta**  
 
 Este diagrama apresenta os contêineres principais que compõem a arquitetura de microsserviços do sistema TudoGestão+. Ele mostra como o frontend, o API Gateway, os microsserviços (Financeiro, Fiscal, Autenticação e Relatórios), o banco de dados e os componentes assíncronos (Celery e Redis) se comunicam entre si para entregar as funcionalidades do ERP.
 
