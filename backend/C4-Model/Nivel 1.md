@@ -5,29 +5,29 @@ Este diagrama de contexto mostra as interações entre os atores externos e o si
 
 > **Observação:** copie exatamente o bloco `mermaid` abaixo (incluindo ```mermaid) e cole em um arquivo `.md`. O GitHub renderiza automaticamente.
 
-```mermaid
 graph LR
-    U[Usuário Final<br>Empresário] -->|Acessa via navegador| FE[Frontend Streamlit]
-    FE -->|Autenticação (JWT)| AUTH[Serviço de Autenticação]
-    FE -->|Requisições REST/GraphQL| GATEWAY[API Gateway]
+    U[Usuario Final] -->|Acessa via navegador| FE[Frontend Streamlit]
+    FE -->|Autenticacao JWT| AUTH[Servico de Autenticacao]
+    FE -->|Requisicoes REST| GATEWAY[API Gateway]
 
-    GATEWAY --> FIN[Serviço Financeiro<br>(FastAPI)]
-    GATEWAY --> FISCAL[Serviço Fiscal / NF-e<br>(FastAPI)]
-    GATEWAY --> REPORTS[Serviço de Relatórios]
+    GATEWAY --> FIN[Servico Financeiro]
+    GATEWAY --> FISCAL[Servico Fiscal NFe]
+    GATEWAY --> REPORTS[Servico de Relatorios]
 
     FIN --> DB[(PostgreSQL)]
     FISCAL --> DB
 
-    FISCAL -->|Envio/Consulta NF-e| SEFAZ[SEFAZ-SP]
-    FIN -->|Sincroniza extratos| BANK[Bancos / APIs Bancárias]
-    REPORTS -->|Envio de relatórios| EMAIL[Serviço de E-mail]
+    FISCAL -->|Envio NFe| SEFAZ[SEFAZ SP]
+    FIN -->|Extratos bancarios| BANK[Bancos API]
+    REPORTS -->|Envio de emails| EMAIL[Servico de Email]
 
     subgraph Infraestrutura
       CELERY[Celery Workers]
-      REDIS[(Redis)]
+      REDIS[Redis]
     end
 
     FIN --> CELERY
     FISCAL --> CELERY
     REPORTS --> CELERY
     CELERY --> REDIS
+
