@@ -327,16 +327,21 @@ Abra seu navegador e acesse: **http://localhost:5173**
 <div align="center">
 
 ### 🏠 Dashboard Principal
-![Dashboard](https://via.placeholder.com/800x400/0071E3/FFFFFF?text=Dashboard+Interativo)
+<img width="1916" height="907" alt="image" src="https://github.com/user-attachments/assets/8a0a806c-6a82-43bc-8eba-101916754e9e" />
+
 
 ### 🛒 PDV (Ponto de Venda)
-![PDV](https://via.placeholder.com/800x400/34C759/FFFFFF?text=PDV+Moderno)
+<img width="1918" height="894" alt="image" src="https://github.com/user-attachments/assets/dffc441a-c903-4d5f-a3ef-e8da4735f7d1" />
+
 
 ### 💰 Gestão Financeira
-![Financeiro](https://via.placeholder.com/800x400/FF9500/FFFFFF?text=Controle+Financeiro)
+<img width="1917" height="903" alt="image" src="https://github.com/user-attachments/assets/a7deb011-c1ca-4d76-9f68-cb0af7c229a2" />
+
 
 ### 📊 Relatórios Avançados
-![Relatórios](https://via.placeholder.com/800x400/AF52DE/FFFFFF?text=Relatórios+Gerenciais)
+
+<img width="1918" height="900" alt="image" src="https://github.com/user-attachments/assets/b85e9288-06a4-4731-b48d-1c2f6d68c5ac" />
+
 
 </div>
 
