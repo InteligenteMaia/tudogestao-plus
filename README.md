@@ -285,7 +285,7 @@ Antes de começar, certifique-se de ter instalado:
 
 ```bash
 # 1️⃣ Clone o repositório
-git clone https://github.com/seu-usuario/tudogestao-plus.git
+git clone https://github.com/InteligenteMaia/tudogestao-plus.git
 cd tudogestao-plus
 
 # 2️⃣ Configure o Backend
